@@ -19,11 +19,11 @@
 # Change the file extension to match the format (.xml for XML, etc...)
 #
 ###
-title: "TODO - Your title"
-abbrev: "TODO - Abbreviation"
+title: Automated Certificate Management Environment (ACME) rats Identifier and Challenge Type
+abbrev: acme-rats
 category: info
 
-docname: draft-todo-yourname-protocol-latest
+docname: draft-liu-acme-rats
 submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
 number:
 date:
@@ -45,9 +45,9 @@ venue:
 
 author:
  -
-    fullname: Your Name Here
-    organization: Your Organization Here
-    email: your.email@example.com
+    fullname: Chunchi Peter Liu
+    organization: Huawei
+    email: liuchunchi@huawei.com
 
 normative:
 
