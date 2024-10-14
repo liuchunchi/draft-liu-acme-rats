@@ -49,12 +49,11 @@ In order to prevent issuing certificates to malicious devices, a few works are o
 - {{?I-D.ietf-lamps-csr-attestation-10}} define trustworthy claims about device's platform generating the certification signing requests (CSR) and the private key resides on this platform. 
 - {{?I-D.draft-moriarty-rats-posture-assessment}} define a summary of a local assessment of posture for managed systems and across various layers.
 
-In this document, we propose an approach where ACME Server checks if the ACME Clients possess a valid remote attestation result, for instance, EAT (entity attestation token). We define a new ACME "rats" identifier and "rats" challenge type for ACME Clients to prove their possession of EAT. In this way, we (as administators) issue certificates only to devices that pass up-to-date security checks. By repeating this process and issue only short-lived certificates to qualified devices, we also fulfill the continuous monitoring/validation requirement of Zero-Trust principle.
+In this document, we propose an approach where ACME Server checks if the ACME Clients possess a valid remote attestation result, for instance, EAT (entity attestation token). We define a new ACME "rats" identifier and "rats" challenge type for ACME Clients to prove their possession of EAT. In this way, we (as network administators) issue certificates only to devices that have a fresh attestation result, indicating such device has passed the most up-to-date security checks. By repeating this process and issue only short-lived certificates to qualified devices, we also fulfill the continuous monitoring/validation requirement of Zero-Trust principle.
 
-The example use case include an enterprise scenario where Network Operations Center (NOC) issue certificates to devices that are freshly appraised and cleared by the Security Operations Center (SOC), in order to help them work together. 
+The example use case include an enterprise scenario where Network Operations Center (NOC) issue certificates to devices that are freshly appraised by the Security Operations Center (SOC), in order to help them work together. 
 
 For ease of denotion, we omit the "ACME" adjective from now on, where Server means ACME Server and Client means ACME Client. 
-
 
 
 # Extensions -- rats identifier
@@ -66,7 +65,7 @@ An rats identifier type represents a unique identifier to an attestation result.
 
 > REMOVE BEFORE SUBMISSION: Exact format of value? URI? hash of EAT? ueid/eat_nonce?
 
-The following steps are the ones that will affect: 
+The following steps are the ones that will be affected: 
 
 1. newOrder Request Object - identifiers: During the certificate order creation step, the Client sends a /newOrder JWS request (Section 7.4 of {{rfc8555}}) whose payload contains an array of identifiers. The Client adds an rats identifier to the array.
 
@@ -107,8 +106,8 @@ An example extended Order Object:
 
 > REMOVE BEFORE SUBMISSION: other ways to complete authorization step (7.1.3 of {{rfc8555}}): a. Pre-authorization (authz) b. External (RATS) account binding. These can allow background-check model of RATS. In mode a, the Server is a Verifier and the Client is the Attester. The authz process contains RATS process. In mode b. I havent considered that :P
 
-3. Authorization Object - identifier: The Server creates an Authorization Object (Section 7.1.4 of {{rfc8555}})
-4. Challenge Object - identifier: The identifier object adds rats identifier. See next section-- rats challenge type. 
+3. Authorization Object - identifier: The Server creates an Authorization Object that has rats identifier (Section 7.1.4 of {{rfc8555}})
+4. Challenge Object - identifier: The Server creates a Challenge Object that has rats challenge type.
 
 An example extended Authorization Object (that contains a Challenge Object):
 ```
@@ -140,17 +139,17 @@ An example extended Authorization Object (that contains a Challenge Object):
 
 # Extensions -- rats challenge type
 
-A rats challenge type help the Client prove ownership to its attestation result. This section describes the challenge/response extensions and procedures to use them.  
+A rats challenge type help the Client prove ownership to its attestation result identifier. This section describes the challenge/response extensions and procedures to use them.  
 
 ## RATS-01 Challenge {#rats01}
 
 RATS-01 Challenge simply works with Passport Model of RATS. The corresponding Challenge Object is:
 
   type: "rats-01"
-  url: required, string, the URL where the Client post its response.
+  url: required, string, the URL that the Client post its response to.
   token: required, string, same as Section 8.3 of {{rfc8555}}
 
-The final response sent to the url is: 
+The response sent to the url is: 
 
   keyAuthorization = token || '.' || base64url(attestationResult)
 
@@ -187,7 +186,7 @@ In an enterprise network scenario, it is hard to coordinate Security Operations 
 
 This work proposes a way to help SOC and NOC work together, with separated duties (to avoid conflict) and ease of working together (proper abstraction).
 
-An Endpoint Detection and Response (EDR) software and Security Operations Center (SOC) is responsible for checking the security status of an accessing end device. If the device passed latest security checks, EDR/SOC should issue fresh attestation results (consider as a security clearance). Otherwise, EDR/SOC should refuse to issue attestation results. A Network Operations Center (NOC) could use ACME to issue short-lived certificates to only devices with fresh attestation results. In this way, the NOC can follow a Zero-Trust philosophy and issue network access to only devices that are continuously monitored and have no known security risks. SOC can also have flexible security policies and decide what to check. 
+An Endpoint Detection and Response (EDR) software and Security Operations Center (SOC) is responsible for checking the security status of an accessing end device. If the device passed latest security checks, EDR/SOC should issue fresh attestation results (consider as a security clearance). Otherwise, EDR/SOC should refuse to issue (new) attestation results. A Network Operations Center (NOC) could use ACME to issue short-lived certificates to only devices with fresh attestation results. In this way, the NOC can follow a Zero-Trust philosophy and issue network access to only devices that are continuously monitored and have no known security risks up-to-date. SOC can also have flexible security policies and decide what to check. 
 
 # Security Considerations
 
