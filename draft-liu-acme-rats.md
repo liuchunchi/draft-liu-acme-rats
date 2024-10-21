@@ -1,7 +1,7 @@
 ---
 title: Automated Certificate Management Environment (ACME) rats Identifier and Challenge Type
 abbrev: acme-rats
-category: 
+category: std
 
 docname: draft-liu-acme-rats-latest
 submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
@@ -75,7 +75,7 @@ The following steps are the ones that will be affected:
 
 An example extended newOrder JWS request:
 
-```
+~~~~~~~~~~
 {
   "protected": base64url({
     "alg": "ES256",
@@ -87,12 +87,13 @@ An example extended newOrder JWS request:
   }),
   "signature": "H6ZXtGjTZyUnPeKn...wEA4TklBdh3e454g"
 }
-```
+~~~~~~~~~~
 
 2. Order Object - identifiers: After a newOrder request is sent to the Server, the Account Object creates an Order Object (Section 7.1.3 of {{RFC8555}}) with "rats" identifiers and values from Step 1.
 
 An example extended Order Object:
-```
+
+~~~~~~~~~~
 {
   "status": "pending",
 
@@ -106,7 +107,7 @@ An example extended Order Object:
 
   "finalize": "https://example.com/acme/order/TOlocE8rfgo/finalize",
 }
-```
+~~~~~~~~~~
 
 > REMOVE BEFORE SUBMISSION: other ways to complete authorization step (7.1.3 of {{RFC8555}}): a. Pre-authorization (authz) b. External (RATS) account binding. These can allow background-check model of RATS. In mode a, the Server is a Verifier and the Client is the Attester. The authz process contains RATS process. In mode b. I havent considered that :P
 
@@ -114,7 +115,8 @@ An example extended Order Object:
 4. Challenge Object - identifier: The Server creates a Challenge Object that has rats challenge type.
 
 An example extended Authorization Object (that contains a Challenge Object):
-```
+
+~~~~~~~~~~
 {
   "status": "pending",
 
@@ -138,7 +140,7 @@ An example extended Authorization Object (that contains a Challenge Object):
     }
   ],
 }
-```
+~~~~~~~~~~
 
 
 # Extensions -- rats challenge type
@@ -166,7 +168,7 @@ keyAuthorization = token || '.' || base64url(attestationResult)
 
 where the attestationResult is the entire EAT (in JWT format). The ACME Server verifies the attestationResult. If pass, set Order Object and Authorization Object's "status" Object to "valid", otherwise "invalid".
 
-> REMOVE BEFORE SUBMISSION: Actually, this usage might be tricky. 1. the original keyAuthorization string is token || '.' || base64url(Thumbprint(accountKey)). I replaced Thumbprint(accountKey) with attestationResult, no hash, which lacks a proof of possession to the accountKey, and attestationResult is plaintext. Should I construct a proper JSON/JWS Object, where the payload contains the attestationResult? 2. In the original RFC8555, this response string is not posted directly to the "url". Instead it post this response to its own server path and send only an empty {} to the url, notifying the Server it is ready to fetch. The server then does a canonical verification. (8.3 of {{RFC8555}})
+> REMOVE BEFORE SUBMISSION: Actually, this usage might be tricky. 1. the original keyAuthorization string is token concats '.' concats base64url(Thumbprint(accountKey)). I replaced Thumbprint(accountKey) with attestationResult, no hash, which lacks a proof of possession to the accountKey, and attestationResult is plaintext. Should I construct a proper JSON/JWS Object, where the payload contains the attestationResult? 2. In the original RFC8555, this response string is not posted directly to the "url". Instead it post this response to its own server path and send only an empty {} to the url, notifying the Server it is ready to fetch. The server then does a canonical verification. (8.3 of {{RFC8555}})
 
 
 ## RATS-02 Challenge {#rats02}
