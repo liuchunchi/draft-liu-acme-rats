@@ -47,6 +47,7 @@ This document describes an approach where ACME Client can prove possession of a 
 ACME {{RFC8555}} is a standard protocol for issuing and renewing certificates automatically, widely used in the Internet scenario, help an ACME Client prove its ownership to an identifier like domain name or email address.
 
 In order to prevent issuing certificates to malicious devices, a few works are ongoing in the LAMPS and RATS WG.
+
 - {{?I-D.ietf-lamps-csr-attestation-10}} define trustworthy claims about device's platform generating the certification signing requests (CSR) and the private key resides on this platform.
 - {{?I-D.draft-moriarty-rats-posture-assessment}} define a summary of a local assessment of posture for managed systems and across various layers.
 
@@ -67,52 +68,49 @@ type (required, string):
 value (required, string):
 : The identifier itself.
 
-> REMOVE BEFORE SUBMISSION: Exact format of value? URI? hash of EAT? ueid/eat_nonce?
-
 The following steps are the ones that will be affected:
 
-1. newOrder Request Object - identifiers: During the certificate order creation step, the Client sends a /newOrder JWS request (Section 7.4 of {{RFC8555}}) whose payload contains an array of identifiers. The Client adds an rats identifier to the array.
+1\. newOrder Request Object - identifiers: During the certificate order creation step, the Client sends a /newOrder JWS request (Section 7.4 of {{RFC8555}}) whose payload contains an array of identifiers. The Client adds an rats identifier to the array.
 
 An example extended newOrder JWS request:
 
 ~~~~~~~~~~
-{
-  "protected": base64url({
-    "alg": "ES256",
-  }),
-  "payload": base64url({
-    "identifiers": [
-      { "type": "rats", "value": "0123456789abcdef" },
-    ],
-  }),
-  "signature": "H6ZXtGjTZyUnPeKn...wEA4TklBdh3e454g"
-}
+  {
+    "protected": base64url({
+      "alg": "ES256",
+    }),
+    "payload": base64url({
+      "identifiers": [
+        { "type": "rats", "value": "0123456789abcdef" },
+      ],
+    }),
+    "signature": "H6ZXtGjTZyUnPeKn...wEA4TklBdh3e454g"
+  }
 ~~~~~~~~~~
 
-2. Order Object - identifiers: After a newOrder request is sent to the Server, the Account Object creates an Order Object (Section 7.1.3 of {{RFC8555}}) with "rats" identifiers and values from Step 1.
+2\. Order Object - identifiers: After a newOrder request is sent to the Server, the Account Object creates an Order Object (Section 7.1.3 of {{RFC8555}}) with "rats" identifiers and values from Step 1.
 
 An example extended Order Object:
 
 ~~~~~~~~~~
-{
-  "status": "pending",
+  {
+    "status": "pending",
 
-  "identifiers": [
-    { "type": "rats", "value": "0123456789abcdef" },
-  ],
+    "identifiers": [
+      { "type": "rats", "value": "0123456789abcdef" },
+    ],
 
-  "authorizations": [
-    "https://example.com/acme/authz/PAniVnsZcis",
-  ],
+    "authorizations": [
+      "https://example.com/acme/authz/PAniVnsZcis",
+    ],
 
-  "finalize": "https://example.com/acme/order/TOlocE8rfgo/finalize",
-}
+    "finalize": "https://example.com/acme/order/TOlocE8rfgo/finalize",
+  }
 ~~~~~~~~~~
 
-> REMOVE BEFORE SUBMISSION: other ways to complete authorization step (7.1.3 of {{RFC8555}}): a. Pre-authorization (authz) b. External (RATS) account binding. These can allow background-check model of RATS. In mode a, the Server is a Verifier and the Client is the Attester. The authz process contains RATS process. In mode b. I havent considered that :P
+3\. Authorization Object - identifier: The Server creates an Authorization Object that has rats identifier (Section 7.1.4 of {{RFC8555}})
 
-3. Authorization Object - identifier: The Server creates an Authorization Object that has rats identifier (Section 7.1.4 of {{RFC8555}})
-4. Challenge Object - identifier: The Server creates a Challenge Object that has rats challenge type.
+4\. Challenge Object - identifier: The Server creates a Challenge Object that has rats challenge type.
 
 An example extended Authorization Object (that contains a Challenge Object):
 
@@ -168,16 +166,11 @@ keyAuthorization = token || '.' || base64url(attestationResult)
 
 where the attestationResult is the entire EAT (in JWT format). The ACME Server verifies the attestationResult. If pass, set Order Object and Authorization Object's "status" Object to "valid", otherwise "invalid".
 
-> REMOVE BEFORE SUBMISSION: Actually, this usage might be tricky. 1. the original keyAuthorization string is token concats '.' concats base64url(Thumbprint(accountKey)). I replaced Thumbprint(accountKey) with attestationResult, no hash, which lacks a proof of possession to the accountKey, and attestationResult is plaintext. Should I construct a proper JSON/JWS Object, where the payload contains the attestationResult? 2. In the original RFC8555, this response string is not posted directly to the "url". Instead it post this response to its own server path and send only an empty {} to the url, notifying the Server it is ready to fetch. The server then does a canonical verification. (8.3 of {{RFC8555}})
-
-
 ## RATS-02 Challenge {#rats02}
 
 RATS-02 Challenge works with the Background Check Model of RATS.
 
 TODO: After the Client gets the "token", it include "token" as part of its RATS Evidence, appraise again. The new attestationResult now has a "token" claim. The retrival process is same.
-
-> REMOVE BEFORE SUBMISSION: There might be different ways to prove ownership to rats identifiers. It really depends on what exactly does this "rats" identifier represent-- an attestation result (hash or EAT, eat_nonce, ...), or a RATS attester identity (ueid, ...).  As for -00, it only represents an attestation result.
 
 # Reusing HTTP challenge type {#http}
 
@@ -187,7 +180,6 @@ We can also reuse http-01 challenge type in Section 8.3 of {{RFC8555}}. This cha
 2. The Client provisions the keyAuthorization string in the resource path defined in the original http-01 challenge -- "/.well-known/acme-challenge/", followed by the "token".
 3. The Client sends an empty object ({}) to the url, notifying the Server it is ready to fetch.
 4. The Server fetches the keyAuthorization string from the resource path. Verifies the "token", retrive the attestationResult.
-
 
 # Example use case -- enterprise access
 
