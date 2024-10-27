@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-10-24T00:48:22.428712+00:00",
+  "timestamp": "2024-10-27T00:52:54.874231+00:00",
   "repo": "liuchunchi/draft-liu-acme-rats",
   "labels": [
     {
@@ -78,7 +78,7 @@
       "id": "I_kwDONAGRsc6bCfAc",
       "title": "Exact format of \"rats\" identifier value",
       "url": "https://github.com/liuchunchi/draft-liu-acme-rats/issues/2",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "liuchunchi",
       "authorAssociation": "OWNER",
       "assignees": [],
@@ -87,9 +87,17 @@
       ],
       "body": "In other words, a string that uniquely identifies a rats output?  URI? hash of EAT? Others...",
       "createdAt": "2024-10-21T02:29:58Z",
-      "updatedAt": "2024-10-21T02:29:58Z",
-      "closedAt": null,
-      "comments": []
+      "updatedAt": "2024-10-25T01:25:56Z",
+      "closedAt": "2024-10-25T01:25:56Z",
+      "comments": [
+        {
+          "author": "liuchunchi",
+          "authorAssociation": "OWNER",
+          "body": "duplicate with #3 ",
+          "createdAt": "2024-10-25T01:25:56Z",
+          "updatedAt": "2024-10-25T01:25:56Z"
+        }
+      ]
     },
     {
       "number": 3,
@@ -103,9 +111,17 @@
       "labels": [],
       "body": "Should \"rats\" identifier represent only an attestation result (hash or EAT, eat_nonce, ...), or a RATS attester identity (ueid, ...)?  As for -00, it only represents an attestation result.",
       "createdAt": "2024-10-21T02:33:08Z",
-      "updatedAt": "2024-10-21T02:33:08Z",
+      "updatedAt": "2024-10-25T01:25:21Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "liuchunchi",
+          "authorAssociation": "OWNER",
+          "body": "or permanent-identifier as suggested by bweeks and mike",
+          "createdAt": "2024-10-25T01:24:56Z",
+          "updatedAt": "2024-10-25T01:25:21Z"
+        }
+      ]
     },
     {
       "number": 4,
@@ -117,9 +133,9 @@
       "authorAssociation": "OWNER",
       "assignees": [],
       "labels": [],
-      "body": "1. the original keyAuthorization string is token concats '.' concats base64url(Thumbprint(accountKey)). \r\nIn this draft, I replaced Thumbprint(accountKey) with attestationResult, no hash, which lacks a proof of possession to the accountKey, and attestationResult is plaintext. \r\n\r\nShould we construct a proper JSON/JWS Object, where the payload contains the attestationResult? \r\n\r\n2. In the original RFC8555, this response string is not posted directly to the \"url\". Instead it post this response to its own server path and send only an empty {} to the url, notifying the Server it is ready to fetch. The server then does a canonical verification. (8.3 of {{RFC8555}})",
+      "body": "1. the original keyAuthorization string is token concats '.' concats base64url(Thumbprint(accountKey)). \r\nIn this draft, I replaced Thumbprint(accountKey) with attestationResult, no hash, which lacks a proof of possession to the accountKey, and attestationResult is plaintext. \r\n\r\nShould we construct a proper JSON/JWS Object, where the payload contains the attestationResult? ",
       "createdAt": "2024-10-21T02:35:07Z",
-      "updatedAt": "2024-10-21T02:35:07Z",
+      "updatedAt": "2024-10-25T01:24:30Z",
       "closedAt": null,
       "comments": []
     }
