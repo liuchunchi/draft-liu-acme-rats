@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-11-21T00:51:15.919811+00:00",
+  "timestamp": "2024-11-24T00:55:07.763778+00:00",
   "repo": "liuchunchi/draft-liu-acme-rats",
   "labels": [
     {
@@ -209,7 +209,7 @@
       "labels": [],
       "body": "clean up to current consensus",
       "createdAt": "2024-11-18T10:14:51Z",
-      "updatedAt": "2024-11-18T10:19:28Z",
+      "updatedAt": "2024-11-21T01:44:19Z",
       "baseRepository": "liuchunchi/draft-liu-acme-rats",
       "baseRefName": "main",
       "baseRefOid": "83950421b68f2ef50a51b40e67b56c7d8fe2bd91",
@@ -222,6 +222,53 @@
       "mergeCommit": null,
       "comments": [],
       "reviews": []
+    },
+    {
+      "number": 8,
+      "id": "PR_kwDONAGRsc6CmtCH",
+      "title": "Mike's initial thoughts on what this document should be",
+      "url": "https://github.com/liuchunchi/draft-liu-acme-rats/pull/8",
+      "state": "OPEN",
+      "author": "ounsworth",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2024-11-21T03:06:45Z",
+      "updatedAt": "2024-11-21T03:45:38Z",
+      "baseRepository": "liuchunchi/draft-liu-acme-rats",
+      "baseRefName": "main",
+      "baseRefOid": "83950421b68f2ef50a51b40e67b56c7d8fe2bd91",
+      "headRepository": "liuchunchi/draft-liu-acme-rats",
+      "headRefName": "ounsworth-patch-1",
+      "headRefOid": "8330240f3a46994a2cba754b51d1f830085640e8",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDONAGRsc6SCmwV",
+          "commit": {
+            "abbreviatedOid": "8330240"
+          },
+          "author": "liuchunchi",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2024-11-21T03:45:37Z",
+          "updatedAt": "2024-11-21T03:45:38Z",
+          "comments": [
+            {
+              "originalPosition": 86,
+              "body": "mike, in the sessions you mentioned to return the cmw in a proper JWS formatted challenge-response, which I think may be a better place to encapsulate it. I revised this in PR #6 . what do you think? Other revisions in this PR looks good. we can cherry-pick them and merge 2 PRs",
+              "createdAt": "2024-11-21T03:45:38Z",
+              "updatedAt": "2024-11-21T03:45:49Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
