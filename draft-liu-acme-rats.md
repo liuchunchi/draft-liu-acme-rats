@@ -28,6 +28,10 @@ author:
     fullname: Chunchi Peter Liu
     organization: Huawei
     email: liuchunchi@huawei.com
+ -
+    fullname: Michael Richardson
+    organization: Sandelman Software Works Inc
+    email: mcr+ietf@sandelman.ca
 
 normative:
   RFC8555:
