@@ -48,142 +48,51 @@ This document describes an approach where ACME Client can prove possession of a 
 
 # Introduction
 
-ACME {{RFC8555}} is a standard protocol for issuing and renewing certificates automatically, widely used in the Internet scenario, help an ACME Client prove its ownership to an identifier like domain name or email address.
+ACME {{RFC8555}} is a standard protocol for issuing and renewing certificates automatically.
+ACME is been a key component in making certificate issuance easily automated, and that has permitted widespread adoption of HTTPS.  The ACME protocol includes mechanisms by which a client may prove it is authorized for particular identities to be included in the certificate. These identifers are typically DNS names, but not exclusively.  ACME includes an authorization system consisting of different challenges that prove ownership to identifiers like domain name or email address.
 
-In order to prevent issuing certificates to malicious devices, a few works are ongoing in the LAMPS and RATS WG.
+However, ACME does not put any restrictions on the security posture of the device requesting a certificate, neither at initial issuance time, nor on an ongoing basis.
 
-- {{?I-D.ietf-lamps-csr-attestation}} define trustworthy claims about device's platform generating the certification signing requests (CSR) and the private key resides on this platform.
-- {{?I-D.draft-moriarty-rats-posture-assessment}} define a summary of a local assessment of posture for managed systems and across various layers.
+In this document, it is proposed to have ACME Servers evaluate remote attestation results as part of the certificate issurance and renewal process.
+The posession of a valid, fresh, remote attestation result by the ACME client, for instance an EAT (entity attestation token) constitutes proof that the ACME client has had a recent security posture evaluation.
 
-In this document, we propose an approach where ACME Server checks if the ACME Clients possess a valid remote attestation result, for instance, EAT (entity attestation token). We define a new ACME "rats" identifier and "rats" challenge type for ACME Clients to prove their possession of EAT. In this way, we (as network administators) issue certificates only to devices that have a fresh attestation result, indicating such device has passed the most up-to-date security checks. By repeating this process and issue only short-lived certificates to qualified devices, we also fulfill the continuous monitoring/validation requirement of Zero-Trust principle.
+Possession of an attestion result presupposes that the client has communicated with a verifier, and further, that the attestation result has been produced by a verifier that produces attestation results that the ACME server has been configured to trust.
 
-The example use case include an enterprise scenario where Network Operations Center (NOC) issue certificates to devices that are freshly appraised by the Security Operations Center (SOC), in order to help them work together.
+An example use case includes enterprise scenarios where Network Operations Center (NOC) issue certificates to devices that are freshly appraised by the Security Operations Center (SOC), in order to help them work together.
+
+# Terminology
+
+{::boilerplate bcp14-tagged}
+
+The terms Attester, Verifier, Relying Party, Evidence and Attestation Results are from {{RFC9334}}.
 
 For ease of denotion, we omit the "ACME" adjective from now on, where Server means ACME Server and Client means ACME Client.
 
+# ACME processes
 
-# Extensions -- rats identifier
+As explained in {{RFC8555, Section 4}}, ACME consists of the following steps:
 
-An rats identifier type represents a unique identifier to an attestation result. It extends a "rats" identifier type and a string value.
+1. Account Creation (newAccount, newNonce)
+2. Order creation (newOrder)
+3. Validation (newAuthz)
+4. Certificate Issuance (newOrder)
 
-type (required, string):
-: The string "rats".
+While it might appear that Remote Attestation should occur at the authorization step, the ACME authorization process is about proving ownership of identities that can go into the resulting certificates.
+This includes dns-01, and http-01 challenges for DNS FQDN, but also email address {{?RFC8823}}, and also DTN IDs.
+In each case, the client picks a single challenge to respond to, and the result of the challenge provides authorization for the client to speak for that particular identifier.
 
-value (required, string):
-: The identifier itself.
+Remote Attestation occurs at an entirely different stage of the protocol, and provides a completely different piece of information to the ACME server.
+Remote Attestation occurs during the Account Creation process as part of the authentication protocol, as a variation of the externalAccountingBinding process, {{RFC8555, Section 7.3.4}}.
 
-The following steps are the ones that will be affected:
-
-1\. newOrder Request Object - identifiers: During the certificate order creation step, the Client sends a /newOrder JWS request (Section 7.4 of {{RFC8555}}) whose payload contains an array of identifiers. The Client adds an rats identifier to the array.
-
-An example extended newOrder JWS request:
-
-~~~~~~~~~~
-  {
-    "protected": base64url({
-      "alg": "ES256",
-    }),
-    "payload": base64url({
-      "identifiers": [
-        { "type": "rats", "value": "0123456789abcdef" },
-      ],
-    }),
-    "signature": "H6ZXtGjTZyUnPeKn...wEA4TklBdh3e454g"
-  }
-~~~~~~~~~~
-
-2\. Order Object - identifiers: After a newOrder request is sent to the Server, the Account Object creates an Order Object (Section 7.1.3 of {{RFC8555}}) with "rats" identifiers and values from Step 1.
-
-An example extended Order Object:
-
-~~~~~~~~~~
-  {
-    "status": "pending",
-
-    "identifiers": [
-      { "type": "rats", "value": "0123456789abcdef" },
-    ],
-
-    "authorizations": [
-      "https://example.com/acme/authz/PAniVnsZcis",
-    ],
-
-    "finalize": "https://example.com/acme/order/T..fgo/finalize",
-  }
-~~~~~~~~~~
-
-3\. Authorization Object - identifier: The Server creates an Authorization Object that has rats identifier (Section 7.1.4 of {{RFC8555}})
-
-4\. Challenge Object - identifier: The Server creates a Challenge Object that has rats challenge type.
-
-An example extended Authorization Object (that contains a Challenge Object):
-
-~~~~~~~~~~
-{
-  "status": "pending",
-
-  "identifier": {
-    "type": "rats",
-    "value": "0123456789abcdef"
-  },
-
-  "challenges": [
-    {
-      "type": "rats",
-      "url": "https://example.com/acme/chall/prV_B7yEyA4",
-      "status": "pending",
-      "token": "DGyRejmCefe7v4NfDGDKfA",
-    },
-    {
-      "type": "http-01",
-      "url": "https://example.com/acme/chall/prV_B7yEyA4",
-      "status": "pending",
-      "token": "DGyRejmCefe7v4NfDGDKfA",
-    }
-  ],
-}
-~~~~~~~~~~
+## Passport Model for ACME
 
 
-# Extensions -- rats challenge type
 
-A rats challenge type help the Client prove ownership to its attestation result identifier. This section describes the challenge/response extensions and procedures to use them.
-
-## RATS-01 Challenge {#rats01}
-
-RATS-01 Challenge simply works with Passport Model of RATS. The corresponding Challenge Object is:
-
-type (required, string):
-: The string "rats-01".
-
-url (required, string):
-: The URL that the Client post its response to.
-
-token (required, string):
-: Same as Section 8.3 of RFC8555.
-
-The response sent to the url is:
-
-~~~~~~~~~~
-keyAuthorization = token || '.' || base64url(attestationResult)
-~~~~~~~~~~
-
-where the attestationResult is the entire EAT (in JWT format). The ACME Server verifies the attestationResult. If pass, set Order Object and Authorization Object's "status" Object to "valid", otherwise "invalid".
-
-## RATS-02 Challenge {#rats02}
+## Background-Check model for ACME
 
 RATS-02 Challenge works with the Background Check Model of RATS.
 
 TODO: After the Client gets the "token", it include "token" as part of its RATS Evidence, appraise again. The new attestationResult now has a "token" claim. The retrival process is same.
-
-# Reusing HTTP challenge type {#http}
-
-We can also reuse http-01 challenge type in Section 8.3 of {{RFC8555}}. This changes steps used in {#rats01}.
-
-1. The Client creates the keyAuthorization string defined in {#rats01}.
-2. The Client provisions the keyAuthorization string in the resource path defined in the original http-01 challenge -- "/.well-known/acme-challenge/", followed by the "token".
-3. The Client sends an empty object ({}) to the url, notifying the Server it is ready to fetch.
-4. The Server fetches the keyAuthorization string from the resource path. Verifies the "token", retrive the attestationResult.
 
 # Example use case -- enterprise access
 
