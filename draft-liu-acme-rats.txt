@@ -4,13 +4,14 @@
 
 Automated Certificate Management Environment                   C. P. Liu
 Internet-Draft                                                    Huawei
-Intended status: Standards Track                         21 October 2024
-Expires: 24 April 2025
+Intended status: Standards Track                           M. Richardson
+Expires: 30 May 2025                        Sandelman Software Works Inc
+                                                        26 November 2024
 
 
 Automated Certificate Management Environment (ACME) rats Identifier and
                              Challenge Type
-                       draft-liu-acme-rats-latest
+                         draft-liu-acme-rats-00
 
 Abstract
 
@@ -50,7 +51,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 24 April 2025.
+   This Internet-Draft will expire on 30 May 2025.
 
 Copyright Notice
 
@@ -81,7 +82,7 @@ Table of Contents
      8.1.  Normative References
      8.2.  Informative References
    Acknowledgments
-   Author's Address
+   Authors' Addresses
 
 1.  Introduction
 
@@ -93,9 +94,9 @@ Table of Contents
    In order to prevent issuing certificates to malicious devices, a few
    works are ongoing in the LAMPS and RATS WG.
 
-   *  [I-D.ietf-lamps-csr-attestation-10] define trustworthy claims
-      about device's platform generating the certification signing
-      requests (CSR) and the private key resides on this platform.
+   *  [I-D.ietf-lamps-csr-attestation] define trustworthy claims about
+      device's platform generating the certification signing requests
+      (CSR) and the private key resides on this platform.
 
    *  [I-D.draft-moriarty-rats-posture-assessment] define a summary of a
       local assessment of posture for managed systems and across various
@@ -157,19 +158,19 @@ Table of Contents
 
    An example extended Order Object:
 
-    {
-      "status": "pending",
+     {
+       "status": "pending",
 
-      "identifiers": [
-        { "type": "rats", "value": "0123456789abcdef" },
-      ],
+       "identifiers": [
+         { "type": "rats", "value": "0123456789abcdef" },
+       ],
 
-      "authorizations": [
-        "https://example.com/acme/authz/PAniVnsZcis",
-      ],
+       "authorizations": [
+         "https://example.com/acme/authz/PAniVnsZcis",
+       ],
 
-      "finalize": "https://example.com/acme/order/TOlocE8rfgo/finalize",
-    }
+       "finalize": "https://example.com/acme/order/T..fgo/finalize",
+     }
 
    3.  Authorization Object - identifier: The Server creates an
    Authorization Object that has rats identifier (Section 7.1.4 of
@@ -320,20 +321,25 @@ Table of Contents
               <https://datatracker.ietf.org/doc/html/draft-moriarty-
               rats-posture-assessment-01>.
 
-   [I-D.ietf-lamps-csr-attestation-10]
+   [I-D.ietf-lamps-csr-attestation]
               Ounsworth, M., Tschofenig, H., Birkholz, H., Wiseman, M.,
               and N. Smith, "Use of Remote Attestation with
               Certification Signing Requests", Work in Progress,
-              Internet-Draft, draft-ietf-lamps-csr-attestation-10, 7
-              July 2024, <https://datatracker.ietf.org/doc/html/draft-
-              ietf-lamps-csr-attestation-10>.
+              Internet-Draft, draft-ietf-lamps-csr-attestation-14, 21
+              October 2024, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-lamps-csr-attestation-14>.
 
 Acknowledgments
 
    TODO acknowledge.
 
-Author's Address
+Authors' Addresses
 
    Chunchi Peter Liu
    Huawei
    Email: liuchunchi@huawei.com
+
+
+   Michael Richardson
+   Sandelman Software Works Inc
+   Email: mcr+ietf@sandelman.ca
