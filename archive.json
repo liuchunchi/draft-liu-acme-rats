@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-11-26T00:51:59.871143+00:00",
+  "timestamp": "2024-11-28T00:52:44.878948+00:00",
   "repo": "liuchunchi/draft-liu-acme-rats",
   "labels": [
     {
@@ -269,6 +269,32 @@
           ]
         }
       ]
+    },
+    {
+      "number": 9,
+      "id": "PR_kwDONAGRsc6DPsBx",
+      "title": "substantial rewriting of ACME/RATS interaction",
+      "url": "https://github.com/liuchunchi/draft-liu-acme-rats/pull/9",
+      "state": "OPEN",
+      "author": "mcr",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This moves the RATS AttestationResults into the newAccount transaction.\r\nThe details of how exactly are still todo.",
+      "createdAt": "2024-11-26T21:24:01Z",
+      "updatedAt": "2024-11-26T21:24:20Z",
+      "baseRepository": "liuchunchi/draft-liu-acme-rats",
+      "baseRefName": "main",
+      "baseRefOid": "df223713b3e324c58edbe223f1dd8324370b6fe8",
+      "headRepository": "liuchunchi/draft-liu-acme-rats",
+      "headRefName": "acme-externalAccountBindingProcess",
+      "headRefOid": "52ba998cf8cf860facf7d4e7e87e70b935b0fd7c",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
