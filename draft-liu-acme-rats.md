@@ -82,10 +82,14 @@ This includes dns-01, and http-01 challenges for DNS FQDN, but also email addres
 In each case, the client picks a single challenge to respond to, and the result of the challenge provides authorization for the client to speak for that particular identifier.
 
 Remote Attestation occurs at an entirely different stage of the protocol, and provides a completely different piece of information to the ACME server.
-Remote Attestation occurs during the Account Creation process as part of the authentication protocol, as a variation of the externalAccountingBinding process, {{RFC8555, Section 7.3.4}}.
+Remote Attestation occurs during the Account Creation process as part of the authentication protocol: {{RFC8555, Section 7.3.4}}.
 
 ## Passport Model for ACME
 
+In the passport model, the (ACME) Client has to reach out to a verifier and provide Evidence to the Verifier.
+The Verifier responds with Attestation Results which is then included in the newAccount request using a new header attribute: "ar".
+
+It is not necessary for standardization of this trustworthy extension to standardize the specifics of how the Attester/Verifier communication is done.
 
 
 ## Background-Check model for ACME
