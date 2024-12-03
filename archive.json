@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2024-12-01T01:01:57.578249+00:00",
+  "timestamp": "2024-12-03T00:54:00.687834+00:00",
   "repo": "liuchunchi/draft-liu-acme-rats",
   "labels": [
     {
@@ -282,13 +282,13 @@
       "labels": [],
       "body": "This moves the RATS AttestationResults into the newAccount transaction.\r\nThe details of how exactly are still todo.",
       "createdAt": "2024-11-26T21:24:01Z",
-      "updatedAt": "2024-11-26T21:24:20Z",
+      "updatedAt": "2024-12-01T19:05:47Z",
       "baseRepository": "liuchunchi/draft-liu-acme-rats",
       "baseRefName": "main",
       "baseRefOid": "df223713b3e324c58edbe223f1dd8324370b6fe8",
       "headRepository": "liuchunchi/draft-liu-acme-rats",
       "headRefName": "acme-externalAccountBindingProcess",
-      "headRefOid": "52ba998cf8cf860facf7d4e7e87e70b935b0fd7c",
+      "headRefOid": "b413bfad81a8eacc97aff624d23559cf365d18c5",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
