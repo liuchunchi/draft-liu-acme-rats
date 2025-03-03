@@ -198,16 +198,6 @@ where the attestationResult is the entire EAT (in JWT format). The ACME Server v
 
 device-attest-03 Challenge works the same way as device-attest-02, but expects the Client to return RATS evidence in accordance with the Background Check Model of RATS.
 
-
-# Reusing HTTP challenge type {#http}
-
-We can also reuse http-01 challenge type in Section 8.3 of {{RFC8555}}. This changes steps used in {#rats01}.
-
-1. The Client creates the keyAuthorization string defined in {#rats01}.
-2. The Client provisions the keyAuthorization string in the resource path defined in the original http-01 challenge -- "/.well-known/acme-challenge/", followed by the "token".
-3. The Client sends an empty object ({}) to the url, notifying the Server it is ready to fetch.
-4. The Server fetches the keyAuthorization string from the resource path. Verifies the "token", retrive the attestationResult.
-
 # ACME Attest Claims Hint Registry {#claimshints}
 
 In order to facilitate the Server requesting attestation of specific types claims or properties, we define a new registry of ACME Claims Hints. In order to preserve flexibility, the Claim Hints are intended to be generic in nature, allowing for the client to reply with any type of attestation evidence or attestation result that contains the requested information. As such, these values are not intended to map one-to-one with any specific remote attestation evidence or attestation result format, but instead they are to serve as a hint to the ACME Client about what type of attestation it needs to collect from the device. Ultimately, the CA's certificate policies will be the authority on what evidence or attestation results it will accept.
