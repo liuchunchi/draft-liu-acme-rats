@@ -3,7 +3,7 @@ title: Automated Certificate Management Environment (ACME) rats Identifier and C
 abbrev: acme-rats
 category: std
 
-docname: draft-liu-acme-rats-00
+docname: draft-liu-acme-rats-latest
 submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
 number:
 date:
