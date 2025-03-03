@@ -1,20 +1,22 @@
 ---
+stand_alone: true
+category: std
+submissionType: IETF
+ipr: trust200902
+lang: en
+
 title: Automated Certificate Management Environment (ACME) rats Identifier and Challenge Type
 abbrev: acme-rats
-category: std
-
 docname: draft-liu-acme-rats-latest
-submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
-number:
-date:
-consensus: true
-v: 3
+
 area: "Security"
 workgroup: "Automated Certificate Management Environment"
-keyword:
+
+kw:
  - ACME
  - RATS
  - Zero Trust
+
 venue:
   group: "Automated Certificate Management Environment"
   type: "Working Group"
@@ -29,14 +31,8 @@ author:
     organization: Huawei
     email: liuchunchi@huawei.com
 -
-    ins: M. Ounsworth
-    name: Mike Ounsworth
-    org: Entrust Limited
-    abbrev: Entrust
-    street: 2500 Solandt Road – Suite 100
-    city: Ottawa, Ontario
-    country: Canada
-    code: K2K 3G5
+    fullname: Mike Ounsworth
+    organization: Entrust Limited
     email: mike.ounsworth@entrust.com
  -
     fullname: Michael Richardson
