@@ -192,8 +192,6 @@ keyAuthorization = token || '.' || cmw
 
 where `cmw` MAY be either a CMW in JWT format, or a Base64 CMW in CWT format as per {{CMW}}.
 
-where the attestationResult is the entire EAT (in JWT format). The ACME Server verifies the attestationResult. If pass, set Order Object and Authorization Object's "status" Object to "valid", otherwise "invalid".
-
 ## device-attest-03 Challenge {#rats02}
 
 device-attest-03 Challenge works the same way as device-attest-02, but expects the Client to return RATS evidence in accordance with the Background Check Model of RATS.
