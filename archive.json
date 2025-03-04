@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-03-02T00:53:55.243829+00:00",
+  "timestamp": "2025-03-04T00:51:36.907832+00:00",
   "repo": "liuchunchi/draft-liu-acme-rats",
   "labels": [
     {
@@ -202,25 +202,33 @@
       "id": "PR_kwDONAGRsc6COTXC",
       "title": "clean up draft framework",
       "url": "https://github.com/liuchunchi/draft-liu-acme-rats/pull/6",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "liuchunchi",
       "authorAssociation": "OWNER",
       "assignees": [],
       "labels": [],
       "body": "clean up to current consensus",
       "createdAt": "2024-11-18T10:14:51Z",
-      "updatedAt": "2024-11-21T01:44:19Z",
+      "updatedAt": "2025-03-03T08:21:47Z",
       "baseRepository": "liuchunchi/draft-liu-acme-rats",
       "baseRefName": "main",
       "baseRefOid": "83950421b68f2ef50a51b40e67b56c7d8fe2bd91",
       "headRepository": "liuchunchi/draft-liu-acme-rats",
       "headRefName": "clean-up",
       "headRefOid": "db2789d6b193d18ec7f654aa1722eefde6854b69",
-      "closedAt": null,
+      "closedAt": "2025-03-03T08:21:46Z",
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
+      "comments": [
+        {
+          "author": "liuchunchi",
+          "authorAssociation": "OWNER",
+          "body": "closed this PR as updated in the latest PRs and commit #4c385c4\r\n",
+          "createdAt": "2025-03-03T08:21:46Z",
+          "updatedAt": "2025-03-03T08:21:46Z"
+        }
+      ],
       "reviews": []
     },
     {
@@ -228,25 +236,35 @@
       "id": "PR_kwDONAGRsc6CmtCH",
       "title": "Mike's initial thoughts on what this document should be",
       "url": "https://github.com/liuchunchi/draft-liu-acme-rats/pull/8",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "ounsworth",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2024-11-21T03:06:45Z",
-      "updatedAt": "2024-11-21T03:45:38Z",
+      "updatedAt": "2025-03-03T07:06:32Z",
       "baseRepository": "liuchunchi/draft-liu-acme-rats",
       "baseRefName": "main",
-      "baseRefOid": "83950421b68f2ef50a51b40e67b56c7d8fe2bd91",
+      "baseRefOid": "df223713b3e324c58edbe223f1dd8324370b6fe8",
       "headRepository": "liuchunchi/draft-liu-acme-rats",
       "headRefName": "ounsworth-patch-1",
-      "headRefOid": "8330240f3a46994a2cba754b51d1f830085640e8",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
-      "comments": [],
+      "headRefOid": "a6cbfcdf4fa71587396913f7fc63ada4ecc2f6e4",
+      "closedAt": "2025-03-03T07:06:26Z",
+      "mergedAt": "2025-03-03T07:06:26Z",
+      "mergedBy": "liuchunchi",
+      "mergeCommit": {
+        "oid": "a694eb8b2f894431059cc13c759b4494b3f98664"
+      },
+      "comments": [
+        {
+          "author": "liuchunchi",
+          "authorAssociation": "OWNER",
+          "body": "Merged Mike's revisions",
+          "createdAt": "2025-03-03T07:06:32Z",
+          "updatedAt": "2025-03-03T07:06:32Z"
+        }
+      ],
       "reviews": [
         {
           "id": "PRR_kwDONAGRsc6SCmwV",
@@ -265,6 +283,26 @@
               "body": "mike, in the sessions you mentioned to return the cmw in a proper JWS formatted challenge-response, which I think may be a better place to encapsulate it. I revised this in PR #6 . what do you think? Other revisions in this PR looks good. we can cherry-pick them and merge 2 PRs",
               "createdAt": "2024-11-21T03:45:38Z",
               "updatedAt": "2024-11-21T03:45:49Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDONAGRsc6eJL5R",
+          "commit": {
+            "abbreviatedOid": "8330240"
+          },
+          "author": "liuchunchi",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2025-03-03T06:54:57Z",
+          "updatedAt": "2025-03-03T06:54:57Z",
+          "comments": [
+            {
+              "originalPosition": 107,
+              "body": "This looks like a duplicate-- i will delete this sentence",
+              "createdAt": "2025-03-03T06:54:57Z",
+              "updatedAt": "2025-03-03T06:54:58Z"
             }
           ]
         }
