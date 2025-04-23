@@ -4,19 +4,15 @@ category: std
 submissionType: IETF
 ipr: trust200902
 lang: en
-
 title: Automated Certificate Management Environment (ACME) rats Identifier and Challenge Type
 abbrev: acme-rats
 docname: draft-liu-acme-rats-latest
-
 area: "Security"
 workgroup: "Automated Certificate Management Environment"
-
 kw:
  - ACME
  - RATS
  - Zero Trust
-
 venue:
   group: "Automated Certificate Management Environment"
   type: "Working Group"
@@ -24,13 +20,12 @@ venue:
   arch: "https://mailarchive.ietf.org/arch/browse/acme/"
   github: "liuchunchi/draft-liu-acme-rats"
   latest: "https://liuchunchi.github.io/draft-liu-acme-rats/draft-liu-acme-rats.html"
-
 author:
  -
     fullname: Chunchi Peter Liu
     organization: Huawei
     email: liuchunchi@huawei.com
--
+ -
     fullname: Mike Ounsworth
     organization: Entrust Limited
     email: mike.ounsworth@entrust.com
@@ -38,11 +33,9 @@ author:
     fullname: Michael Richardson
     organization: Sandelman Software Works Inc
     email: mcr+ietf@sandelman.ca
-
 normative:
   RFC8555:
   I-D.draft-ietf-rats-msg-wrap: CMW
-
 informative:
   I-D.ietf-lamps-csr-attestation: CSRATT
   I-D.draft-moriarty-rats-posture-assessment: RATSPA
