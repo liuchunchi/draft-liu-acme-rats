@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2025-04-01T00:59:57.767419+00:00",
+  "timestamp": "2025-04-29T00:55:10.316391+00:00",
   "repo": "liuchunchi/draft-liu-acme-rats",
   "labels": [
     {
@@ -333,6 +333,46 @@
       "mergeCommit": null,
       "comments": [],
       "reviews": []
+    },
+    {
+      "number": 10,
+      "id": "PR_kwDONAGRsc6UEdwK",
+      "title": "update the use case to be more specific",
+      "url": "https://github.com/liuchunchi/draft-liu-acme-rats/pull/10",
+      "state": "OPEN",
+      "author": "liuchunchi",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "as discussed with michael.",
+      "createdAt": "2025-04-27T12:29:15Z",
+      "updatedAt": "2025-04-27T23:52:10Z",
+      "baseRepository": "liuchunchi/draft-liu-acme-rats",
+      "baseRefName": "main",
+      "baseRefOid": "abad22ce7ec1fc4a9a95b1fad170cfbdb664534a",
+      "headRepository": "liuchunchi/draft-liu-acme-rats",
+      "headRefName": "liuchunchi-patch-1",
+      "headRefOid": "5ffc09311738023aff284cf6600832946ce3381d",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDONAGRsc6mwq62",
+          "commit": {
+            "abbreviatedOid": "5ffc093"
+          },
+          "author": "mcr",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2025-04-27T23:52:10Z",
+          "updatedAt": "2025-04-27T23:52:10Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
