@@ -35,10 +35,10 @@ author:
     email: mcr+ietf@sandelman.ca
 normative:
   RFC8555:
-  I-D.draft-ietf-rats-msg-wrap: CMW
+  CMW: I-D.draft-ietf-rats-msg-wrap
 informative:
-  I-D.ietf-lamps-csr-attestation: CSRATT
-  I-D.draft-moriarty-rats-posture-assessment: RATSPA
+  CSRATT: I-D.ietf-lamps-csr-attestation
+  RATSPA: I-D.draft-moriarty-rats-posture-assessment
   I-D.draft-bweeks-acme-device-attest-01: device-attest-01
 
 --- abstract
@@ -53,12 +53,12 @@ ACME {{RFC8555}} is a standard protocol for issuing and renewing certificates au
 
 In order to prevent issuing certificates to malicious devices, a few works are ongoing in the LAMPS and RATS WG.
 
-- {{I-D.ietf-lamps-csr-attestation}} define trustworthy claims about device's platform generating the certification signing requests (CSR) and the private key resides on this platform.
-- {{I-D.draft-moriarty-rats-posture-assessment}} define a summary of a local assessment of posture for managed systems and across various layers.
+- {{CSRATT}} define trustworthy claims about device's platform generating the certification signing requests (CSR) and the private key resides on this platform.
+- {{RATSPA}} define a summary of a local assessment of posture for managed systems and across various layers.
 
 This document builds on {{I-D.draft-bweeks-acme-device-attest-01}} which provides a mechanism for WebAuthn attestations over ACME. This document is broader in scope to support a broad range of attestation formats.
 
-In this document, we propose an approach where ACME Server MAY challenge the ACME Client to produce an Attestation Evidence or Attestation Result in any format that is supported by the RATS Conceptual Message Wrapper [CMW]. The ACME Server then checks if the ACME Clients presented a valid remote attestation evidence or remote attestation result, for instance, an EAT (entity attestation token). The ACME Server MAY perform any necessary checks against the provided remote attestation, as required by by the requested certificate profile; this conforms to the RATS concept of an Appraisal Policy.
+In this document, we propose an approach where ACME Server MAY challenge the ACME Client to produce an Attestation Evidence or Attestation Result in any format that is supported by the RATS Conceptual Message Wrapper {{CMW}}. The ACME Server then checks if the ACME Clients presented a valid remote attestation evidence or remote attestation result, for instance, an EAT (entity attestation token). The ACME Server MAY perform any necessary checks against the provided remote attestation, as required by by the requested certificate profile; this conforms to the RATS concept of an Appraisal Policy.
 
 This document defines a new ACME "rats" identifier and the challenge types "device-attest-02" and "device-attest-03" which are respectively use to challenge for a RATS background check and passport model type attestation. In this way, the CA / RA issues certificates only to devices that can provide an appropriate attestation result, indicating such device has passed the required security checks. By repeating this process and issuing only short-lived certificates to qualified devices, we also fulfill the continuous monitoring/validation requirement of Zero-Trust principle.
 
@@ -171,7 +171,7 @@ nonce (optional, string):
 : If attestation freshness is required, then the Server MAY present a nonce which then MUST be echoed in the provided attestation. In some situations, the nonce will come from a separate RATS Verifier, and therefore needs to be a distinct value from the ACME token.
 
 attestClaimsHint (optional, list of string)
-: If the Server requires attestation of specific claims or properties in order to issue the requested certificate profile, then it MAY list one or more types of claims from the newly-defined ACME Attest Claims Hints registry defined in {{sec-claimshints}}.
+: If the Server requires attestation of specific claims or properties in order to issue the requested certificate profile, then it MAY list one or more types of claims from the newly-defined ACME Attest Claims Hints registry defined in {{claimshints}}.
 
 The response sent to the url is:
 
