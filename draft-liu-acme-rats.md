@@ -53,8 +53,8 @@ ACME {{RFC8555}} is a standard protocol for issuing and renewing certificates au
 
 In order to prevent issuing certificates to malicious devices, a few works are ongoing in the LAMPS and RATS WG.
 
-- {{?I-D.ietf-lamps-csr-attestation}} define trustworthy claims about device's platform generating the certification signing requests (CSR) and the private key resides on this platform.
-- {{?I-D.draft-moriarty-rats-posture-assessment}} define a summary of a local assessment of posture for managed systems and across various layers.
+- {{I-D.ietf-lamps-csr-attestation}} define trustworthy claims about device's platform generating the certification signing requests (CSR) and the private key resides on this platform.
+- {{I-D.draft-moriarty-rats-posture-assessment}} define a summary of a local assessment of posture for managed systems and across various layers.
 
 This document builds on {{I-D.draft-bweeks-acme-device-attest-01}} which provides a mechanism for WebAuthn attestations over ACME. This document is broader in scope to support a broad range of attestation formats.
 
