@@ -35,22 +35,59 @@ author:
     email: mcr+ietf@sandelman.ca
 normative:
   RFC8555:
+  RFC9334:
   CMW: I-D.draft-ietf-rats-msg-wrap
 informative:
   CSRATT: I-D.ietf-lamps-csr-attestation
   RATSPA: I-D.draft-moriarty-rats-posture-assessment
   I-D.draft-bweeks-acme-device-attest-01: device-attest-01
+  letencrypt:
+    target:    https://www.eff.org/deeplinks/2023/08/celebrating-ten-years-encrypting-web-lets-encrypt
+    title: "Celebrating Ten Years of Encrypting the Web with Let’s Encrypt"
+    author:
+      org:
+      - "Electronic Frontier Foundation"
+    date: 2025-08-20
 
 --- abstract
 
-This document describes an approach where an ACME Server can challenge an ACME Client to provide a Remote Attestation Evidence or Remote Attestation Result in any format supported by the Conceptual Message Wrapper. The ACME Server can optionally challenge the Client for specific claims that it wishes attestation for.
+This document describes an approach where an ACME Server can challenge an ACME Client to provide a Remote Attestation Evidence or Remote Attestation Result in any format supported by the Conceptual Message Wrapper.
+
+The ACME Server can optionally challenge the Client for specific claims that it wishes attestation for.
 
 --- middle
 
 # Introduction
 
-ACME {{RFC8555}} is a standard protocol for issuing and renewing certificates automatically, widely used in the Internet scenario, help an ACME Client prove its ownership to an identifier like domain name or email address.
+ACME {{RFC8555}} is a standard protocol for issuing and renewing certificates automatically.
+ACME clients needing a certificate from a certification authority connect to the ACME server, provide a proof of control of a desired identity, and then receive a certificate with that identity in it.
 
+These identities become part of the certificate, usually a Fully Qualified Domain Name (FQDN) that goes into the Subject Alt Name (SAN) for a certificate.
+Prior to ACME, the authorization process of obtaining a certificate from an operator of a (public) certification authority was non-standard and ad-hoc.
+It ranged from sending faxes on company letterhead to answering an email sent to a well-known email address like hostmaster@example.com, evolving into a process where some randomized nonce could be placed in a particular place on the target web server.
+The point of this process is to prove that the given DNS FQDN was controlled by the client system.
+
+ACME standardized the process, allowing for automation for certificate issuance.
+It has been a massive success: increasing HTTPS usage from 27% in 2013 to over 80% in 2019 {{letsencrypt}}.
+
+While the process supports many kinds of identifiers: email addresses, DTN node IDs, and can create certificates for client use.
+However, these combinations have not yet become as popular.
+
+One concern around enterprise use of client side certificates has been the trustworthiness of the client system itself.
+There is often a desire to use mutual TLS (client and server authentication via PKIX certificate), but the private key associated with a client certificates can be vulnerable to loss or disclosure if not protected properly.
+
+This is a place where Remote Attestation can offer additional assurance {{!RFC9334}}.
+If the software on the client is properly designed, and is up to date, then it is easier to assure that the private key will be safe.
+
+This document defines an extension to ACME that allows an ACME server to received a signed Attestation Result.
+
+ACME can presently offer certificates with multiple identities.
+Typically, in a server certificate situation, each identity represents a unique FQDN that would be placed into the certificate as distinct Subject Alt Names (SAN).
+For instance each of the names: example.com, www.example.com, www.example.net and marketing.example.com might be placed in a single certificate for a server that provides web content under those four names.
+
+This document defines a new identity type, `trustworthy` that the ACME client can ask for.  the `attestation-result-01` which
+
+##
 In order to prevent issuing certificates to malicious devices, a few works are ongoing in the LAMPS and RATS WG.
 
 - {{CSRATT}} define trustworthy claims about device's platform generating the certification signing requests (CSR) and the private key resides on this platform.
