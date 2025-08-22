@@ -71,38 +71,60 @@ ACME standardized the process, allowing for automation for certificate issuance.
 It has been a massive success: increasing HTTPS usage from 27% in 2013 to over 80% in 2019 {{letsencrypt}}.
 
 While the process supports many kinds of identifiers: email addresses, DTN node IDs, and can create certificates for client use.
-However, these combinations have not yet become as popular.
+However, these combinations have not yet become as popular, in part because these types of certificates are usually located on much more general purpose systems such as laptops and computers used by people.
 
-One concern around enterprise use of client side certificates has been the trustworthiness of the client system itself.
-There is often a desire to use mutual TLS (client and server authentication via PKIX certificate), but the private key associated with a client certificates can be vulnerable to loss or disclosure if not protected properly.
+The concern that Enterprises have with the use of client side certificates has been the trustworthiness of the client system itself.
+Such systems have many more configurations, and are often considered harder to secure as a result.
+While well managed mutual TLS (client and server authentication via PKIX certificate) has significant advantages over the more common login via username/passowrd,  if the private key associated with a client certificates is disclosed or lost, then the impact can be more significant.
+
+The use case envisioned here is that of an enterprise.  A Network Operations Center (NOC)
+(which may be internal or external) will issue (client) certificates to devices that can prove via remote attestation that they are running an up-to-date operating system as well as the enterprise-required endpoint security software.
 
 This is a place where Remote Attestation can offer additional assurance {{!RFC9334}}.
 If the software on the client is properly designed, and is up to date, then it is easier to assure that the private key will be safe.
 
-This document defines an extension to ACME that allows an ACME server to received a signed Attestation Result.
+This can be extended to Bring Your Own Device (BYOD) by having those devices provide an equivalent Attestation Result.
+
+This document defines an extension to ACME that allows an ACME server to received the signed (and fresh) Attestation Result.
 
 ACME can presently offer certificates with multiple identities.
 Typically, in a server certificate situation, each identity represents a unique FQDN that would be placed into the certificate as distinct Subject Alt Names (SAN).
 For instance each of the names: example.com, www.example.com, www.example.net and marketing.example.com might be placed in a single certificate for a server that provides web content under those four names.
 
-This document defines a new identity type, `trustworthy` that the ACME client can ask for.  the `attestation-result-01` which
-
-##
-In order to prevent issuing certificates to malicious devices, a few works are ongoing in the LAMPS and RATS WG.
-
-- {{CSRATT}} define trustworthy claims about device's platform generating the certification signing requests (CSR) and the private key resides on this platform.
-- {{RATSPA}} define a summary of a local assessment of posture for managed systems and across various layers.
-
-This document builds on {{I-D.draft-bweeks-acme-device-attest-01}} which provides a mechanism for WebAuthn attestations over ACME. This document is broader in scope to support a broad range of attestation formats.
-
-In this document, we propose an approach where ACME Server MAY challenge the ACME Client to produce an Attestation Evidence or Attestation Result in any format that is supported by the RATS Conceptual Message Wrapper {{CMW}}. The ACME Server then checks if the ACME Clients presented a valid remote attestation evidence or remote attestation result, for instance, an EAT (entity attestation token). The ACME Server MAY perform any necessary checks against the provided remote attestation, as required by by the requested certificate profile; this conforms to the RATS concept of an Appraisal Policy.
-
-This document defines a new ACME "rats" identifier and the challenge types "device-attest-02" and "device-attest-03" which are respectively use to challenge for a RATS background check and passport model type attestation. In this way, the CA / RA issues certificates only to devices that can provide an appropriate attestation result, indicating such device has passed the required security checks. By repeating this process and issuing only short-lived certificates to qualified devices, we also fulfill the continuous monitoring/validation requirement of Zero-Trust principle.
-
-Some example use cases include an enterprise scenario where Network Operations Center (NOC) issue certificates to devices that can prove via remote attestation that they are running an up-to-date operating system as well as the enterprise-required endpoint security software. Another example is issuing S/MIME certificates to BYOD devices only if they can prove via attestation that they are registered to a corporate MDM and the user they are registered to matches the user for which a certificate has been requested.
+This document defines a new identity type, `trustworthy` that the ACME client can ask for.
+The new `attestation-result-01` challenge is defined as a new method that can be used to authorize this identity.
 
 For ease of denotion, we omit the "ACME" adjective from now on, where Server means ACME Server and Client means ACME Client.
 
+## Attestation Results only
+
+This document currently only defines the a mechanism to carry Attestation Results from the ACME client to the ACME server.
+It limits itself to the Passport model defined in {{RFC9334}}.
+
+This is done to simplify the combinations, but also because it is likely that the Evidence required to make a reasonable assessment includes potentially privacy violating claims.
+This is particularly true when a device is a personal (BYOD) device; in that case the Verifier might not even be owned by the Enterprise,  but rather the device manufacturer.
+
+In order to make use of the background check that Evidence would need to be encrypted from the Attesting Environment to the Verifier, via the ACME Server -- the Relying Party.
+Secondly, in order for the ACME Server to be able to securely communicate with an Enterprise located Verifier with that Evidence, then more complex trust relationships would need to be established.
+Thirdly, the Enterprise Verifier system would then have to expose itself to the ACME Server, which may be located outside of the Enterprise.
+The ACME Server, for resiliency and loading reasons may be a numerous and dynamic cluster of systems, and providing appropriate network access controls to enable this communication may be difficult.
+
+Instead, the use of the Passport model allows all Evidence to remain within an Enterprise,
+and for Verifier operations to be more self-contained.
+
+## Related work
+
+{{CSRATT}} define trustworthy claims about the physical storage location of a key pair's private key.
+This mechanism only relates to how the private key is kept.
+It does not provide any claim about the rest of the mechanisms around access to the key.
+A key could well be stored in the most secure way imaginable, but in order to use the key some command mechanism must exist to invoke it.
+
+The mechanism created in this document allows certification authority to access the trustworthiness of the entire system.
+That accessment goes well beyond how and where the private key is stored.
+ACME uses Certificate Signing Requests, so there is no reason that {{CSRATT}} could not be combined with the mechanism described in this document.
+
+{{RATSPA}} defines a summary of a local assessment of posture for managed systems and across various  layers.
+The claims and mechanisms defined in {{RATSPA}} are a good basis for the assessment that will need to be done in order to satisfy the trustworthiness challenge detailed in this document.
 
 # Extensions -- rats identifier
 
