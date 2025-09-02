@@ -1,0 +1,502 @@
+
+
+
+
+Automated Certificate Management Environment                   C. P. Liu
+Internet-Draft                                                    Huawei
+Intended status: Standards Track                            M. Ounsworth
+Expires: 6 March 2026                                    Entrust Limited
+                                                           M. Richardson
+                                            Sandelman Software Works Inc
+                                                        2 September 2025
+
+
+Automated Certificate Management Environment (ACME) rats Identifier and
+                             Challenge Type
+                       draft-liu-acme-rats-latest
+
+Abstract
+
+   This document describes an approach where an ACME Server can
+   challenge an ACME Client to provide a Remote Attestation Evidence or
+   Remote Attestation Result in any format supported by the Conceptual
+   Message Wrapper.
+
+   The ACME Server can optionally challenge the Client for specific
+   claims that it wishes attestation for.
+
+About This Document
+
+   This note is to be removed before publishing as an RFC.
+
+   The latest revision of this draft can be found at
+   https://liuchunchi.github.io/draft-liu-acme-rats/draft-liu-acme-
+   rats.html.  Status information for this document may be found at
+   https://datatracker.ietf.org/doc/draft-liu-acme-rats/.
+
+   Discussion of this document takes place on the Automated Certificate
+   Management Environment Working Group mailing list
+   (mailto:acme@ietf.org), which is archived at
+   https://mailarchive.ietf.org/arch/browse/acme/.  Subscribe at
+   https://www.ietf.org/mailman/listinfo/acme/.
+
+   Source for this draft and an issue tracker can be found at
+   https://github.com/liuchunchi/draft-liu-acme-rats.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 6 March 2026.
+
+Copyright Notice
+
+   Copyright (c) 2025 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction
+     1.1.  Attestation Results only
+     1.2.  Related work
+   2.  Extensions -- rats identifier
+   3.  Extensions -- rats challenge types
+     3.1.  device-attest-02 Challenge
+     3.2.  device-attest-03 Challenge
+   4.  ACME Attest Claims Hint Registry
+   5.  Example use case -- enterprise access
+   6.  Security Considerations
+   7.  IANA Considerations
+     7.1.  ACME Attest Claims Hint Registry
+   8.  References
+     8.1.  Normative References
+     8.2.  Informative References
+   Acknowledgments
+   Authors' Addresses
+
+1.  Introduction
+
+   ACME [RFC8555] is a standard protocol for issuing and renewing
+   certificates automatically.  ACME clients needing a certificate from
+   a certification authority connect to the ACME server, provide a proof
+   of control of a desired identity, and then receive a certificate with
+   that identity in it.
+
+   These identities become part of the certificate, usually a Fully
+   Qualified Domain Name (FQDN) that goes into the Subject Alt Name
+   (SAN) for a certificate.  Prior to ACME, the authorization process of
+   obtaining a certificate from an operator of a (public) certification
+   authority was non-standard and ad-hoc.  It ranged from sending faxes
+   on company letterhead to answering an email sent to a well-known
+   email address like hostmaster@example.com, evolving into a process
+   where some randomized nonce could be placed in a particular place on
+   the target web server.  The point of this process is to prove that
+   the given DNS FQDN was controlled by the client system.
+
+   ACME standardized the process, allowing for automation for
+   certificate issuance.  It has been a massive success: increasing
+   HTTPS usage from 27% in 2013 to over 80% in 2019 [letsencrypt].
+
+   While the process supports many kinds of identifiers: email
+   addresses, DTN node IDs, and can create certificates for client use.
+   However, these combinations have not yet become as popular, in part
+   because these types of certificates are usually located on much more
+   general purpose systems such as laptops and computers used by people.
+
+   The concern that Enterprises have with the use of client side
+   certificates has been the trustworthiness of the client system
+   itself.  Such systems have many more configurations, and are often
+   considered harder to secure as a result.  While well managed mutual
+   TLS (client and server authentication via PKIX certificate) has
+   significant advantages over the more common login via username/
+   passowrd, if the private key associated with a client certificates is
+   disclosed or lost, then the impact can be more significant.
+
+   The use case envisioned here is that of an enterprise.  A Network
+   Operations Center (NOC) (which may be internal or external) will
+   issue (client) certificates to devices that can prove via remote
+   attestation that they are running an up-to-date operating system as
+   well as the enterprise-required endpoint security software.
+
+   This is a place where Remote Attestation can offer additional
+   assurance [RFC9334].  If the software on the client is properly
+   designed, and is up to date, then it is easier to assure that the
+   private key will be safe.
+
+   This can be extended to Bring Your Own Device (BYOD) by having those
+   devices provide an equivalent Attestation Result.
+
+   This document defines an extension to ACME that allows an ACME server
+   to received the signed (and fresh) Attestation Result.
+
+   ACME can presently offer certificates with multiple identities.
+   Typically, in a server certificate situation, each identity
+   represents a unique FQDN that would be placed into the certificate as
+   distinct Subject Alt Names (SAN).  For instance each of the names:
+   example.com, www.example.com, www.example.net and
+   marketing.example.com might be placed in a single certificate for a
+   server that provides web content under those four names.
+
+   This document defines a new identity type, trustworthy that the ACME
+   client can ask for.  The new attestation-result-01 challenge is
+   defined as a new method that can be used to authorize this identity.
+
+   For ease of denotion, we omit the "ACME" adjective from now on, where
+   Server means ACME Server and Client means ACME Client.
+
+1.1.  Attestation Results only
+
+   This document currently only defines the a mechanism to carry
+   Attestation Results from the ACME client to the ACME server.  It
+   limits itself to the Passport model defined in [RFC9334].
+
+   This is done to simplify the combinations, but also because it is
+   likely that the Evidence required to make a reasonable assessment
+   includes potentially privacy violating claims.  This is particularly
+   true when a device is a personal (BYOD) device; in that case the
+   Verifier might not even be owned by the Enterprise, but rather the
+   device manufacturer.
+
+   In order to make use of the background check that Evidence would need
+   to be encrypted from the Attesting Environment to the Verifier, via
+   the ACME Server -- the Relying Party.  Secondly, in order for the
+   ACME Server to be able to securely communicate with an Enterprise
+   located Verifier with that Evidence, then more complex trust
+   relationships would need to be established.  Thirdly, the Enterprise
+   Verifier system would then have to expose itself to the ACME Server,
+   which may be located outside of the Enterprise.  The ACME Server, for
+   resiliency and loading reasons may be a numerous and dynamic cluster
+   of systems, and providing appropriate network access controls to
+   enable this communication may be difficult.
+
+   Instead, the use of the Passport model allows all Evidence to remain
+   within an Enterprise, and for Verifier operations to be more self-
+   contained.
+
+1.2.  Related work
+
+   [CSRATT] define trustworthy claims about the physical storage
+   location of a key pair's private key.  This mechanism only relates to
+   how the private key is kept.  It does not provide any claim about the
+   rest of the mechanisms around access to the key.  A key could well be
+   stored in the most secure way imaginable, but in order to use the key
+   some command mechanism must exist to invoke it.
+
+   The mechanism created in this document allows certification authority
+   to access the trustworthiness of the entire system.  That accessment
+   goes well beyond how and where the private key is stored.  ACME uses
+   Certificate Signing Requests, so there is no reason that [CSRATT]
+   could not be combined with the mechanism described in this document.
+
+   [RATSPA] defines a summary of a local assessment of posture for
+   managed systems and across various layers.  The claims and mechanisms
+   defined in [RATSPA] are a good basis for the assessment that will
+   need to be done in order to satisfy the trustworthiness challenge
+   detailed in this document.
+
+2.  Extensions -- rats identifier
+
+   An rats identifier type represents a unique identifier to an
+   attestation result.  It extends a "rats" identifier type and a string
+   value.
+
+   type (required, string):  The string "rats".
+
+   value (required, string):  The identifier itself.
+
+   The following steps are the ones that will be affected:
+
+   1. newOrder Request Object - identifiers: During the certificate
+   order creation step, the Client sends a /newOrder JWS request
+   (Section 7.4 of [RFC8555]) whose payload contains an array of
+   identifiers.  The Client adds an rats identifier to the array.
+
+   An example extended newOrder JWS request:
+
+     {
+       "protected": base64url({
+         "alg": "ES256",
+       }),
+       "payload": base64url({
+         "identifiers": [
+           { "type": "rats", "value": "0123456789abcdef" },
+         ],
+       }),
+       "signature": "H6ZXtGjTZyUnPeKn...wEA4TklBdh3e454g"
+     }
+
+   2.  Order Object - identifiers: After a newOrder request is sent to
+   the Server, the Account Object creates an Order Object (Section 7.1.3
+   of [RFC8555]) with "rats" identifiers and values from Step 1.
+
+   An example extended Order Object:
+
+     {
+       "status": "pending",
+
+       "identifiers": [
+         { "type": "rats", "value": "0123456789abcdef" },
+       ],
+
+       "authorizations": [
+         "https://example.com/acme/authz/PAniVnsZcis",
+       ],
+
+       "finalize": "https://example.com/acme/order/T..fgo/finalize",
+     }
+
+   3.  Authorization Object - identifier: The Server creates an
+   Authorization Object that has rats identifier (Section 7.1.4 of
+   [RFC8555])
+
+   4.  Challenge Object - identifier: The Server creates a Challenge
+   Object that has rats challenge type.
+
+   An example extended Authorization Object (that contains a Challenge
+   Object):
+
+   {
+     "status": "pending",
+
+     "identifier": {
+       "type": "rats",
+       "value": "0123456789abcdef"
+     },
+
+     "challenges": [
+       {
+         "type": "rats",
+         "url": "https://example.com/acme/chall/prV_B7yEyA4",
+         "status": "pending",
+         "token": "DGyRejmCefe7v4NfDGDKfA",
+       },
+       {
+         "type": "http-01",
+         "url": "https://example.com/acme/chall/prV_B7yEyA4",
+         "status": "pending",
+         "token": "DGyRejmCefe7v4NfDGDKfA",
+       }
+     ],
+   }
+
+3.  Extensions -- rats challenge types
+
+   A rats challenge type help the Client prove ownership to its
+   attestation result identifier.  This section describes the challenge/
+   response extensions and procedures to use them.
+
+3.1.  device-attest-02 Challenge
+
+   device-attest-02 Challenge simply works with Passport Model of RATS.
+   The corresponding Challenge Object is:
+
+   type (required, string):  The string "device-attest-02".
+
+   url (required, string):  The URL that the Client post its response
+      to.
+
+   token (required, string):  Same as Section 8.3 of RFC8555.
+
+   nonce (optional, string):  If attestation freshness is required, then
+      the Server MAY present a nonce which then MUST be echoed in the
+      provided attestation.  In some situations, the nonce will come
+      from a separate RATS Verifier, and therefore needs to be a
+      distinct value from the ACME token.
+
+   attestClaimsHint (optional, list of string)  If the Server requires
+      attestation of specific claims or properties in order to issue the
+      requested certificate profile, then it MAY list one or more types
+      of claims from the newly-defined ACME Attest Claims Hints registry
+      defined in Section 4.
+
+   The response sent to the url is:
+
+   keyAuthorization = token || '.' || cmw
+
+   where cmw MAY be either a CMW in JWT format, or a Base64 CMW in CWT
+   format as per [CMW].
+
+3.2.  device-attest-03 Challenge
+
+   device-attest-03 Challenge works the same way as device-attest-02,
+   but expects the Client to return RATS evidence in accordance with the
+   Background Check Model of RATS.
+
+4.  ACME Attest Claims Hint Registry
+
+   In order to facilitate the Server requesting attestation of specific
+   types claims or properties, we define a new registry of ACME Claims
+   Hints.  In order to preserve flexibility, the Claim Hints are
+   intended to be generic in nature, allowing for the client to reply
+   with any type of attestation evidence or attestation result that
+   contains the requested information.  As such, these values are not
+   intended to map one-to-one with any specific remote attestation
+   evidence or attestation result format, but instead they are to serve
+   as a hint to the ACME Client about what type of attestation it needs
+   to collect from the device.  Ultimately, the CA's certificate
+   policies will be the authority on what evidence or attestation
+   results it will accept.
+
+   See Section 7.1 for the initial contents of this new registry.
+
+5.  Example use case -- enterprise access
+
+   In an enterprise network scenario, it is hard to coordinate Security
+   Operations Center (SOC) and Network Operations Center (NOC) to work
+   together due to various of reasons:
+
+   1.  Integration/compatibility difficulty: Integrating SOC and NOC
+       requires plenty of customized, case-by-case developing work.
+       Especially considering differrnt system vendors, system versions,
+       different data models and formats due to different client
+       needs... Let alone possible updates.
+
+   2.  Conflict of duties: NOC people do not want SOC people to
+       interfere with their daily work, and so do SOC people.  Also, NOC
+       people may have limited security knowledge, and SOC people vice
+       versa.  Where to draw the line and what is the best tool to help
+       them collaborate is a question.
+
+   This work proposes a way to help SOC and NOC work together, with
+   separated duties (to avoid conflict) and ease of working together
+   (proper abstraction).
+
+   An Endpoint Detection and Response (EDR) software and Security
+   Operations Center (SOC) is responsible for checking the security
+   status of an accessing end device.  If the device passed latest
+   security checks, EDR/SOC should issue fresh attestation results
+   (consider as a security clearance).  Otherwise, EDR/SOC should refuse
+   to issue (new) attestation results.  A Network Operations Center
+   (NOC) could use ACME to issue short-lived certificates to only
+   devices with fresh attestation results.  In this way, the NOC can
+   follow a Zero-Trust philosophy and issue network access to only
+   devices that are continuously monitored and have no known security
+   risks up-to-date.  SOC can also have flexible security policies and
+   decide what to check.
+
+6.  Security Considerations
+
+   TODO Security
+
+7.  IANA Considerations
+
+   IANA is requested to open a new registry, XXXXXXXX
+
+   Type: designated expert
+
+   The registry has the following columns:
+
+   *  Claim Hint: the string value to be placed within an ACME device-
+      attest-02 or device-attest-03 challenge.
+
+   *  Descryption: a descryption of the general type of attestation
+      evidence or attestation result that the client is expected to
+      produce.
+
+   The initial registry contents is shown in the table below.
+
+       +================+=========================================+
+       | Claim Hint     | Description                             |
+       +================+=========================================+
+       | FIPS_mode      | Attestation that the device is          |
+       |                | currently booted in FIPS mode.          |
+       +----------------+-----------------------------------------+
+       | OS_patch_level | Attestation to the version or patch     |
+       |                | level of the device's operating system. |
+       +----------------+-----------------------------------------+
+       | sw_manifest    | A manifest list of all software         |
+       |                | currently running on the device.        |
+       +----------------+-----------------------------------------+
+
+                                 Table 1
+
+7.1.  ACME Attest Claims Hint Registry
+
+8.  References
+
+8.1.  Normative References
+
+   [RFC8555]  Barnes, R., Hoffman-Andrews, J., McCarney, D., and J.
+              Kasten, "Automatic Certificate Management Environment
+              (ACME)", RFC 8555, DOI 10.17487/RFC8555, March 2019,
+              <https://www.rfc-editor.org/rfc/rfc8555>.
+
+   [RFC9334]  Birkholz, H., Thaler, D., Richardson, M., Smith, N., and
+              W. Pan, "Remote ATtestation procedureS (RATS)
+              Architecture", RFC 9334, DOI 10.17487/RFC9334, January
+              2023, <https://www.rfc-editor.org/rfc/rfc9334>.
+
+   [CMW]      Birkholz, H., Smith, N., Fossati, T., Tschofenig, H., and
+              D. Glaze, "RATS Conceptual Messages Wrapper (CMW)", Work
+              in Progress, Internet-Draft, draft-ietf-rats-msg-wrap-17,
+              12 August 2025, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-rats-msg-wrap-17>.
+
+8.2.  Informative References
+
+   [CSRATT]   Ounsworth, M., Tschofenig, H., Birkholz, H., Wiseman, M.,
+              and N. Smith, "Use of Remote Attestation with
+              Certification Signing Requests", Work in Progress,
+              Internet-Draft, draft-ietf-lamps-csr-attestation-20, 7
+              July 2025, <https://datatracker.ietf.org/doc/html/draft-
+              ietf-lamps-csr-attestation-20>.
+
+   [RATSPA]   Moriarty, K., Wiseman, M., and A. J. Stein, "Remote
+              Posture Assessment for Systems, Containers, and
+              Applications", Work in Progress, Internet-Draft, draft-
+              moriarty-rats-posture-assessment-01, 2 July 2024,
+              <https://datatracker.ietf.org/doc/html/draft-moriarty-
+              rats-posture-assessment-01>.
+
+   [I-D.draft-bweeks-acme-device-attest-01]
+              Weeks, B., "Automated Certificate Management Environment
+              (ACME) Device Attestation Extension", Work in Progress,
+              Internet-Draft, draft-bweeks-acme-device-attest-01, 7
+              August 2022, <https://datatracker.ietf.org/doc/html/draft-
+              bweeks-acme-device-attest-01>.
+
+   [letsencrypt]
+              Electronic Frontier Foundation, "Celebrating Ten Years of
+              Encrypting the Web with Let’s Encrypt", 20 August 2025,
+              <https://www.eff.org/deeplinks/2023/08/celebrating-ten-
+              years-encrypting-web-lets-encrypt>.
+
+Acknowledgments
+
+   TODO acknowledge.
+
+Authors' Addresses
+
+   Chunchi Peter Liu
+   Huawei
+   Email: liuchunchi@huawei.com
+
+
+   Mike Ounsworth
+   Entrust Limited
+   Email: mike.ounsworth@entrust.com
+
+
+   Michael Richardson
+   Sandelman Software Works Inc
+   Email: mcr+ietf@sandelman.ca
