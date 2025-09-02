@@ -64,7 +64,7 @@ ACME clients needing a certificate from a certification authority connect to the
 
 These identities become part of the certificate, usually a Fully Qualified Domain Name (FQDN) that goes into the Subject Alt Name (SAN) for a certificate.
 Prior to ACME, the authorization process of obtaining a certificate from an operator of a (public) certification authority was non-standard and ad-hoc.
-It ranged from sending faxes on company letterhead to answering an email sent to a well-known email address like hostmaster@example.com, evolving into a process where some randomized nonce could be placed in a particular place on the target web server.
+It ranged from sending faxes on company letterhead to answering an email sent to a well-known email address like `hostmaster@example.com`, evolving into a process where some randomized nonce could be placed in a particular place on the target web server.
 The point of this process is to prove that the given DNS FQDN was controlled by the client system.
 
 ACME standardized the process, allowing for automation for certificate issuance.
@@ -126,19 +126,22 @@ ACME uses Certificate Signing Requests, so there is no reason that {{CSRATT}} co
 {{RATSPA}} defines a summary of a local assessment of posture for managed systems and across various  layers.
 The claims and mechanisms defined in {{RATSPA}} are a good basis for the assessment that will need to be done in order to satisfy the trustworthiness challenge detailed in this document.
 
-# Extensions -- rats identifier
+# Extensions -- trustworthy identifier
 
-An rats identifier type represents a unique identifier to an attestation result. It extends a "rats" identifier type and a string value.
+This is a new identifier type.
 
 type (required, string):
-: The string "rats".
+: The string "trusthworthy".
 
 value (required, string):
-: The identifier itself.
+: The constant string "trustworthy"
 
 The following steps are the ones that will be affected:
 
-1\. newOrder Request Object - identifiers: During the certificate order creation step, the Client sends a /newOrder JWS request (Section 7.4 of {{RFC8555}}) whose payload contains an array of identifiers. The Client adds an rats identifier to the array.
+1\. newOrder Request Object - identifiers: During the certificate order creation step, the Client sends a /newOrder JWS request (Section 7.4 of {{RFC8555}}) whose payload contains an array of identifiers.
+
+The client adds the `trustworthy` identifier to the array.
+This MUST NOT be the only identifier in the array, as this identity type does not, on its own, provide enough authorization to issue a certificate.
 
 An example extended newOrder JWS request:
 
@@ -149,7 +152,8 @@ An example extended newOrder JWS request:
     }),
     "payload": base64url({
       "identifiers": [
-        { "type": "rats", "value": "0123456789abcdef" },
+        { "type": "truthworthy", "value": "trustworthy" },
+        { "type": "dns-01", "value": "client01.finance.example" },
       ],
     }),
     "signature": "H6ZXtGjTZyUnPeKn...wEA4TklBdh3e454g"
