@@ -79,7 +79,7 @@ Table of Contents
    1.  Introduction
      1.1.  Attestation Results only
      1.2.  Related work
-   2.  Extensions -- rats identifier
+   2.  Extensions -- trustworthy identifier
    3.  Extensions -- rats challenge types
      3.1.  device-attest-02 Challenge
      3.2.  device-attest-03 Challenge
@@ -214,22 +214,24 @@ Table of Contents
    need to be done in order to satisfy the trustworthiness challenge
    detailed in this document.
 
-2.  Extensions -- rats identifier
+2.  Extensions -- trustworthy identifier
 
-   An rats identifier type represents a unique identifier to an
-   attestation result.  It extends a "rats" identifier type and a string
-   value.
+   This is a new identifier type.
 
-   type (required, string):  The string "rats".
+   type (required, string):  The string "trusthworthy".
 
-   value (required, string):  The identifier itself.
+   value (required, string):  The constant string "trustworthy"
 
    The following steps are the ones that will be affected:
 
    1. newOrder Request Object - identifiers: During the certificate
    order creation step, the Client sends a /newOrder JWS request
    (Section 7.4 of [RFC8555]) whose payload contains an array of
-   identifiers.  The Client adds an rats identifier to the array.
+   identifiers.
+
+   The client adds the trustworthy identifier to the array.  This MUST
+   NOT be the only identifier in the array, as this identity type does
+   not, on its own, provide enough authorization to issue a certificate.
 
    An example extended newOrder JWS request:
 
@@ -239,7 +241,8 @@ Table of Contents
        }),
        "payload": base64url({
          "identifiers": [
-           { "type": "rats", "value": "0123456789abcdef" },
+           { "type": "truthworthy", "value": "trustworthy" },
+           { "type": "dns-01", "value": "client01.finance.example" },
          ],
        }),
        "signature": "H6ZXtGjTZyUnPeKn...wEA4TklBdh3e454g"

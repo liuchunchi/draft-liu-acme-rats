@@ -1171,7 +1171,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
-            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-extensions-rats-identifier" class="internal xref">Extensions -- rats identifier</a></p>
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-extensions-trustworthy-iden" class="internal xref">Extensions -- trustworthy identifier</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
             <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-extensions-rats-challenge-t" class="internal xref">Extensions -- rats challenge types</a></p>
@@ -1231,7 +1231,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 ACME clients needing a certificate from a certification authority connect to the ACME server, provide a proof of control of a desired identity, and then receive a certificate with that identity in it.<a href="#section-1-1" class="pilcrow">¶</a></p>
 <p id="section-1-2">These identities become part of the certificate, usually a Fully Qualified Domain Name (FQDN) that goes into the Subject Alt Name (SAN) for a certificate.
 Prior to ACME, the authorization process of obtaining a certificate from an operator of a (public) certification authority was non-standard and ad-hoc.
-It ranged from sending faxes on company letterhead to answering an email sent to a well-known email address like hostmaster@example.com, evolving into a process where some randomized nonce could be placed in a particular place on the target web server.
+It ranged from sending faxes on company letterhead to answering an email sent to a well-known email address like <code>hostmaster@example.com</code>, evolving into a process where some randomized nonce could be placed in a particular place on the target web server.
 The point of this process is to prove that the given DNS FQDN was controlled by the client system.<a href="#section-1-2" class="pilcrow">¶</a></p>
 <p id="section-1-3">ACME standardized the process, allowing for automation for certificate issuance.
 It has been a massive success: increasing HTTPS usage from 27% in 2013 to over 80% in 2019 <span>[<a href="#letsencrypt" class="cite xref">letsencrypt</a>]</span>.<a href="#section-1-3" class="pilcrow">¶</a></p>
@@ -1287,28 +1287,30 @@ The claims and mechanisms defined in <span>[<a href="#RATSPA" class="cite xref">
 </div>
 </section>
 </div>
-<div id="extensions-rats-identifier">
+<div id="extensions-trustworthy-identifier">
 <section id="section-2">
-      <h2 id="name-extensions-rats-identifier">
-<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-extensions-rats-identifier" class="section-name selfRef">Extensions -- rats identifier</a>
+      <h2 id="name-extensions-trustworthy-iden">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-extensions-trustworthy-iden" class="section-name selfRef">Extensions -- trustworthy identifier</a>
       </h2>
-<p id="section-2-1">An rats identifier type represents a unique identifier to an attestation result. It extends a "rats" identifier type and a string value.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<p id="section-2-1">This is a new identifier type.<a href="#section-2-1" class="pilcrow">¶</a></p>
 <span class="break"></span><dl class="dlParallel" id="section-2-2">
         <dt id="section-2-2.1">type (required, string):</dt>
         <dd style="margin-left: 1.5em" id="section-2-2.2">
-          <p id="section-2-2.2.1">The string "rats".<a href="#section-2-2.2.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.2.1">The string "trusthworthy".<a href="#section-2-2.2.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
 <dt id="section-2-2.3">value (required, string):</dt>
         <dd style="margin-left: 1.5em" id="section-2-2.4">
-          <p id="section-2-2.4.1">The identifier itself.<a href="#section-2-2.4.1" class="pilcrow">¶</a></p>
+          <p id="section-2-2.4.1">The constant string "trustworthy"<a href="#section-2-2.4.1" class="pilcrow">¶</a></p>
 </dd>
       <dd class="break"></dd>
 </dl>
 <p id="section-2-3">The following steps are the ones that will be affected:<a href="#section-2-3" class="pilcrow">¶</a></p>
-<p id="section-2-4">1. newOrder Request Object - identifiers: During the certificate order creation step, the Client sends a /newOrder JWS request (Section 7.4 of <span>[<a href="#RFC8555" class="cite xref">RFC8555</a>]</span>) whose payload contains an array of identifiers. The Client adds an rats identifier to the array.<a href="#section-2-4" class="pilcrow">¶</a></p>
-<p id="section-2-5">An example extended newOrder JWS request:<a href="#section-2-5" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-2-6">
+<p id="section-2-4">1. newOrder Request Object - identifiers: During the certificate order creation step, the Client sends a /newOrder JWS request (Section 7.4 of <span>[<a href="#RFC8555" class="cite xref">RFC8555</a>]</span>) whose payload contains an array of identifiers.<a href="#section-2-4" class="pilcrow">¶</a></p>
+<p id="section-2-5">The client adds the <code>trustworthy</code> identifier to the array.
+This MUST NOT be the only identifier in the array, as this identity type does not, on its own, provide enough authorization to issue a certificate.<a href="#section-2-5" class="pilcrow">¶</a></p>
+<p id="section-2-6">An example extended newOrder JWS request:<a href="#section-2-6" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2-7">
 <pre>
   {
     "protected": base64url({
@@ -1316,16 +1318,17 @@ The claims and mechanisms defined in <span>[<a href="#RATSPA" class="cite xref">
     }),
     "payload": base64url({
       "identifiers": [
-        { "type": "rats", "value": "0123456789abcdef" },
+        { "type": "truthworthy", "value": "trustworthy" },
+        { "type": "dns-01", "value": "client01.finance.example" },
       ],
     }),
     "signature": "H6ZXtGjTZyUnPeKn...wEA4TklBdh3e454g"
   }
-</pre><a href="#section-2-6" class="pilcrow">¶</a>
+</pre><a href="#section-2-7" class="pilcrow">¶</a>
 </div>
-<p id="section-2-7">2. Order Object - identifiers: After a newOrder request is sent to the Server, the Account Object creates an Order Object (Section 7.1.3 of <span>[<a href="#RFC8555" class="cite xref">RFC8555</a>]</span>) with "rats" identifiers and values from Step 1.<a href="#section-2-7" class="pilcrow">¶</a></p>
-<p id="section-2-8">An example extended Order Object:<a href="#section-2-8" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-2-9">
+<p id="section-2-8">2. Order Object - identifiers: After a newOrder request is sent to the Server, the Account Object creates an Order Object (Section 7.1.3 of <span>[<a href="#RFC8555" class="cite xref">RFC8555</a>]</span>) with "rats" identifiers and values from Step 1.<a href="#section-2-8" class="pilcrow">¶</a></p>
+<p id="section-2-9">An example extended Order Object:<a href="#section-2-9" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2-10">
 <pre>
   {
     "status": "pending",
@@ -1340,12 +1343,12 @@ The claims and mechanisms defined in <span>[<a href="#RATSPA" class="cite xref">
 
     "finalize": "https://example.com/acme/order/T..fgo/finalize",
   }
-</pre><a href="#section-2-9" class="pilcrow">¶</a>
+</pre><a href="#section-2-10" class="pilcrow">¶</a>
 </div>
-<p id="section-2-10">3. Authorization Object - identifier: The Server creates an Authorization Object that has rats identifier (Section 7.1.4 of <span>[<a href="#RFC8555" class="cite xref">RFC8555</a>]</span>)<a href="#section-2-10" class="pilcrow">¶</a></p>
-<p id="section-2-11">4. Challenge Object - identifier: The Server creates a Challenge Object that has rats challenge type.<a href="#section-2-11" class="pilcrow">¶</a></p>
-<p id="section-2-12">An example extended Authorization Object (that contains a Challenge Object):<a href="#section-2-12" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-2-13">
+<p id="section-2-11">3. Authorization Object - identifier: The Server creates an Authorization Object that has rats identifier (Section 7.1.4 of <span>[<a href="#RFC8555" class="cite xref">RFC8555</a>]</span>)<a href="#section-2-11" class="pilcrow">¶</a></p>
+<p id="section-2-12">4. Challenge Object - identifier: The Server creates a Challenge Object that has rats challenge type.<a href="#section-2-12" class="pilcrow">¶</a></p>
+<p id="section-2-13">An example extended Authorization Object (that contains a Challenge Object):<a href="#section-2-13" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2-14">
 <pre>
 {
   "status": "pending",
@@ -1370,7 +1373,7 @@ The claims and mechanisms defined in <span>[<a href="#RATSPA" class="cite xref">
     }
   ],
 }
-</pre><a href="#section-2-13" class="pilcrow">¶</a>
+</pre><a href="#section-2-14" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
