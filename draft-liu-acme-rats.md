@@ -337,6 +337,9 @@ Although Evidence can be encrypted from the Attester to the Verifier, in order t
 Coordination of that key to the Attester, along with the trust relationship that the ACME Server (as RATS Relying Party) requires results in a highly constrained set of business relationships.
 Supporting only the Passport model allows the two relationships (Attester<->Verifier, and ACME Server<->Verifier) to be managed independantly.
 
+The `trustworthy` identifier and challenge/response is not an actual identifier.
+It does not result in any specific contents to the certificate Subject or SubjectAltName.
+
 # IANA Considerations
 
 IANA is requested to open a new registry, XXXXXXXX
