@@ -41,7 +41,7 @@ informative:
   CSRATT: I-D.ietf-lamps-csr-attestation
   RATSPA: I-D.draft-moriarty-rats-posture-assessment
   I-D.draft-bweeks-acme-device-attest-01: device-attest-01
-  letencrypt:
+  letsencrypt:
     target:    https://www.eff.org/deeplinks/2023/08/celebrating-ten-years-encrypting-web-lets-encrypt
     title: "Celebrating Ten Years of Encrypting the Web with Let’s Encrypt"
     author:
