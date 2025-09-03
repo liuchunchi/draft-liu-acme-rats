@@ -36,10 +36,11 @@ author:
 normative:
   RFC8555:
   RFC9334:
-  CMW: I-D.draft-ietf-rats-msg-wrap
+  I-D.ietf-rats-msg-wrap: CMW
+  I-D.ietf-rats-ar4si: AR4SI
 informative:
   CSRATT: I-D.ietf-lamps-csr-attestation
-  RATSPA: I-D.draft-moriarty-rats-posture-assessment
+  RATSPA: I-D.ietf-rats-posture-assessment
   I-D.draft-bweeks-acme-device-attest-01: device-attest-01
   letsencrypt:
     target:    https://www.eff.org/deeplinks/2023/08/celebrating-ten-years-encrypting-web-lets-encrypt
@@ -231,10 +232,10 @@ The client now uses the token `yoW1RL2zPBzYEHBQ06Jy` as a fresh nonce.
 It produces fresh Evidence, and provides this to the Verifier.
 
 The details of this step are not in scope for this document.
-As an example, it might use TPM-CHARRA {{RFC9684}}, or X, or Y (XXX: insert more options)
+As an example, it might use TPM-CHARRA {{?RFC9684}}, or X, or Y (XXX: insert more options)
 
 The format result is described in {{response}}.
-(An example from {{I-D.ietf-rats-ar4si}} would be good here)
+(An example from {{-AR4SI}} would be good here)
 Assume the following binary blob is the response:
 
 ~~~~~~~~~~
@@ -243,7 +244,7 @@ yePAuQj5xXAnz87/7ItOkDTk5Y4syoW1RL2zPBzYEHBQ06JyUvZDYPYjeTqwlPszb9Grbxw0UAEFx5Dx
 
 This result is sent as a POST to `https://example.com/acme/chall/prV_8235AD9d`
 
-The Server decodes the provided CMW {{I-D.ietf-rats-msg-wrap}}.
+The Server decodes the provided CMW {{-CMW}}.
 The Attestation Results found within will be digitally signed by the Verifier.
 
 The Server MUST verify the signature.
@@ -289,7 +290,7 @@ Once fresh Attestation Results have been obtained from an appropriate RATS Verif
 
 ## truthworthy Response {#response}
 
-The data sent SHOULD be Attestation Results in the form of of a CMW {{I-D.ietf-rats-msg-wrap, Section 5.2}} tagged CBOR encoded Attestation Results for Secure Interactions (AR4SI) {{I-D.ietf-rats-ar4si}}.
+The data sent SHOULD be Attestation Results in the form of of a CMW {{-CMW, Section 5.2}} tagged CBOR encoded Attestation Results for Secure Interactions (AR4SI) {{-AR4SI}}.
 The CM-type MUST include attestation-results, and MUST NOT include any other wrapped values.
 Other formats are permitted by prior arrangement, however, they MUST use the CMW format so that they can be distinguished.
 
