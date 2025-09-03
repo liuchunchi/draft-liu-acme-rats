@@ -81,7 +81,7 @@ While well managed mutual TLS (client and server authentication via PKIX certifi
 The use case envisioned here is that of an enterprise.  A Network Operations Center (NOC)
 (which may be internal or an external contracted entity) will issue (client) certificates to devices that can prove via remote attestation that they are running an up-to-date operating system as well as the enterprise-required endpoint security software.
 
-This is a place where Remote Attestation can offer additional assurance {{!RFC9334}}.
+This is a place where Remote Attestation can offer additional assurance {{RFC9334}}.
 If the software on the client is properly designed, and is up to date, then it is easier to assure that the private key will be safe.
 
 This can be extended to Bring Your Own Device (BYOD) by having those devices provide an equivalent Attestation Result.
