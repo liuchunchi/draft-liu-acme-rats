@@ -5,10 +5,10 @@
 Automated Certificate Management Environment                   C. P. Liu
 Internet-Draft                                                    Huawei
 Intended status: Standards Track                            M. Ounsworth
-Expires: 6 March 2026                                    Entrust Limited
+Expires: 7 March 2026                                    Entrust Limited
                                                            M. Richardson
                                             Sandelman Software Works Inc
-                                                        2 September 2025
+                                                        3 September 2025
 
 
 Automated Certificate Management Environment (ACME) rats Identifier and
@@ -58,7 +58,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 6 March 2026.
+   This Internet-Draft will expire on 7 March 2026.
 
 Copyright Notice
 
@@ -80,9 +80,15 @@ Table of Contents
      1.1.  Attestation Results only
      1.2.  Related work
    2.  Extensions -- trustworthy identifier
-   3.  Extensions -- rats challenge types
-     3.1.  device-attest-02 Challenge
-     3.2.  device-attest-03 Challenge
+     2.1.  Step 1: newOrder Request Object
+     2.2.  Step 2: Order Object
+     2.3.  Step 3: Authorization Object
+     2.4.  Step 4: Obtain Attestation Result
+     2.5.  Step 5: Perform other challenges
+     2.6.  Step 6: Finalize Order, retrieve certificate
+   3.  ACME Extensions -- trusthworthy challenge types
+     3.1.  trusthworthy Challenge
+     3.2.  truthworthy Response
    4.  ACME Attest Claims Hint Registry
    5.  Example use case -- enterprise access
    6.  Security Considerations
@@ -222,16 +228,20 @@ Table of Contents
 
    value (required, string):  The constant string "trustworthy"
 
-   The following steps are the ones that will be affected:
+   The following sections detail the changes.
 
-   1. newOrder Request Object - identifiers: During the certificate
-   order creation step, the Client sends a /newOrder JWS request
-   (Section 7.4 of [RFC8555]) whose payload contains an array of
-   identifiers.
+2.1.  Step 1: newOrder Request Object
 
-   The client adds the trustworthy identifier to the array.  This MUST
-   NOT be the only identifier in the array, as this identity type does
-   not, on its own, provide enough authorization to issue a certificate.
+   During the certificate order creation step, the Client sends a
+   /newOrder JWS request (Section 7.4 of [RFC8555]) whose payload
+   contains an array of identifiers.
+
+   The client adds the trustworthy identifier to the array.
+
+   This MUST NOT be the only identifier in the array, as this identity
+   type does not, on its own, provide enough authorization to issue a
+   certificate.  In this example, a dns identity is chosen for the
+   domain name client01.finance.example.
 
    An example extended newOrder JWS request:
 
@@ -242,89 +252,138 @@ Table of Contents
        "payload": base64url({
          "identifiers": [
            { "type": "truthworthy", "value": "trustworthy" },
-           { "type": "dns-01", "value": "client01.finance.example" },
+           { "type": "dns", "value": "client01.finance.example" },
          ],
        }),
        "signature": "H6ZXtGjTZyUnPeKn...wEA4TklBdh3e454g"
      }
 
-   2.  Order Object - identifiers: After a newOrder request is sent to
-   the Server, the Account Object creates an Order Object (Section 7.1.3
-   of [RFC8555]) with "rats" identifiers and values from Step 1.
+2.2.  Step 2: Order Object
 
-   An example extended Order Object:
+   As explained in [RFC8555], Section 7.1.3, the server returns an Order
+   Object.
+
+   An example extended Order Object that includes
 
      {
        "status": "pending",
 
        "identifiers": [
-         { "type": "rats", "value": "0123456789abcdef" },
+         { "type": "trustworthy", "value": "trustworthy" },
+         { "type": "dns",         "value": "0123456789abcdef" },
        ],
 
        "authorizations": [
          "https://example.com/acme/authz/PAniVnsZcis",
+         "https://example.com/acme/authz/C1uq5Dr+x8GSEJTSKW5B",
        ],
 
        "finalize": "https://example.com/acme/order/T..fgo/finalize",
      }
 
-   3.  Authorization Object - identifier: The Server creates an
-   Authorization Object that has rats identifier (Section 7.1.4 of
-   [RFC8555])
+   Note that the URLs listed in the authorizations array are arbitrary
+   URLs created by the ACME server.  The last component is a randomly
+   created string created by the server.  For simplicity, the first URL
+   is identical to the example given in [RFC8555].
 
-   4.  Challenge Object - identifier: The Server creates a Challenge
-   Object that has rats challenge type.
+2.3.  Step 3: Authorization Object
 
-   An example extended Authorization Object (that contains a Challenge
-   Object):
+   The Server has created an Authorization Object for the trustworthy
+   and dns identifiers.
 
-   {
-     "status": "pending",
+   The client accesses each authorization object from the URLs given in
+   the Order Object.  In this example, the PAniVnsZcis authorization
+   relates to the dns identifier, and it is not changed from [RFC8555],
+   Section 8.
 
-     "identifier": {
-       "type": "rats",
-       "value": "0123456789abcdef"
-     },
+   The C1uq5Dr+x8GSEJTSKW5B authorization is a new authorization type,
+   trustworthy, it is detailed in Section 3.
 
-     "challenges": [
-       {
-         "type": "rats",
-         "url": "https://example.com/acme/chall/prV_B7yEyA4",
-         "status": "pending",
-         "token": "DGyRejmCefe7v4NfDGDKfA",
-       },
-       {
-         "type": "http-01",
-         "url": "https://example.com/acme/chall/prV_B7yEyA4",
-         "status": "pending",
-         "token": "DGyRejmCefe7v4NfDGDKfA",
-       }
-     ],
-   }
+   Here is an example:
 
-3.  Extensions -- rats challenge types
+      {
+        "status": "pending",
+        "expires": "2025-09-30T14:09:07.99Z",
 
-   A rats challenge type help the Client prove ownership to its
-   attestation result identifier.  This section describes the challenge/
-   response extensions and procedures to use them.
+        "identifier": {
+          "type": "trustworthy",
+          "value": "trustworthy"
+        },
 
-3.1.  device-attest-02 Challenge
+        "challenges": [
+          {
+            "type": "trustworthy",
+            "status": "pending",
+            "token": "yoW1RL2zPBzYEHBQ06Jy",
+            "url": "https://example.com/acme/chall/prV_8235AD9d",
+          }
+        ],
+      }
 
-   device-attest-02 Challenge simply works with Passport Model of RATS.
+2.4.  Step 4: Obtain Attestation Result
+
+   The client now uses the token yoW1RL2zPBzYEHBQ06Jy as a fresh nonce.
+   It produces fresh Evidence, and provides this to the Verifier.
+
+   The details of this step are not in scope for this document.  As an
+   example, it might use TPM-CHARRA [RFC9684], or X, or Y (XXX: insert
+   more options)
+
+   The format result is described in Section 3.2.  (An example from
+   [I-D.ietf-rats-ar4si] would be good here) Assume the following binary
+   blob is the response:
+
+yePAuQj5xXAnz87/7ItOkDTk5Y4syoW1RL2zPBzYEHBQ06JyUvZDYPYjeTqwlPszb9Grbxw0UAEFx5DxObV1
+
+   This result is sent as a POST to https://example.com/acme/chall/
+   prV_8235AD9d
+
+   The Server decodes the provided CMW [I-D.ietf-rats-msg-wrap].  The
+   Attestation Results found within will be digitally signed by the
+   Verifier.
+
+   The Server MUST verify the signature.  The signature MUST be from a
+   Verifier that the ACME Server has a trust anchor for.  The list of
+   trust anchors that a Server will trust is an attribute of the ACME
+   Account in use.  The details of how these trust anchors are
+   configured is not in scope for this document.
+
+   At this point, if the client were to retrieve the authorization
+   object from step 3, it would observe (if everything was accepted,
+   verified) that the status for this challenge would now be marked as
+   valid.
+
+2.5.  Step 5: Perform other challenges
+
+   The client SHOULD now perform any other challenges that were listed
+   in the Order Object from step 2.  ACME provides no ordering
+   constraint on the challenges, so they could well have occured
+   concurrently.
+
+2.6.  Step 6: Finalize Order, retrieve certificate
+
+   At this point, the process continues as described in [RFC8555],
+   Section 7.4.  This means that the finalize action is used, which
+   includes a CSR.  If all is well, it will result in a certificate
+   being issued.
+
+3.  ACME Extensions -- trusthworthy challenge types
+
+   A trustworthy challenge type asks the Client to prove provide a fresh
+   Attestation Result.  This section describes the challenge/response
+   extensions and procedures to use them.
+
+3.1.  trusthworthy Challenge
+
+   The trustworthy Challenge works with Passport Model of RATS.
+
    The corresponding Challenge Object is:
 
-   type (required, string):  The string "device-attest-02".
+   type (required, string):  The string "trustworthy".
 
-   url (required, string):  The URL that the Client post its response
-      to.
-
-   token (required, string):  Same as Section 8.3 of RFC8555.
-
-   nonce (optional, string):  If attestation freshness is required, then
-      the Server MAY present a nonce which then MUST be echoed in the
-      provided attestation.  In some situations, the nonce will come
-      from a separate RATS Verifier, and therefore needs to be a
-      distinct value from the ACME token.
+   token (required, string):  A randomly created nonce provided by the
+      server which MUST be included in the Attestation Results to
+      provide freshness.
 
    attestClaimsHint (optional, list of string)  If the Server requires
       attestation of specific claims or properties in order to issue the
@@ -332,18 +391,19 @@ Table of Contents
       of claims from the newly-defined ACME Attest Claims Hints registry
       defined in Section 4.
 
-   The response sent to the url is:
+   Once fresh Attestation Results have been obtained from an appropriate
+   RATS Verifier, then this result is posted to the URL provided in the
+   url attribute.
 
-   keyAuthorization = token || '.' || cmw
+3.2.  truthworthy Response
 
-   where cmw MAY be either a CMW in JWT format, or a Base64 CMW in CWT
-   format as per [CMW].
-
-3.2.  device-attest-03 Challenge
-
-   device-attest-03 Challenge works the same way as device-attest-02,
-   but expects the Client to return RATS evidence in accordance with the
-   Background Check Model of RATS.
+   The data sent SHOULD be Attestation Results in the form of of a CMW
+   [I-D.ietf-rats-msg-wrap], Section 5.2 tagged CBOR encoded Attestation
+   Results for Secure Interactions (AR4SI) [I-D.ietf-rats-ar4si].  The
+   CM-type MUST include attestation-results, and MUST NOT include any
+   other wrapped values.  Other formats are permitted by prior
+   arrangement, however, they MUST use the CMW format so that they can
+   be distinguished.
 
 4.  ACME Attest Claims Hint Registry
 
@@ -351,14 +411,13 @@ Table of Contents
    types claims or properties, we define a new registry of ACME Claims
    Hints.  In order to preserve flexibility, the Claim Hints are
    intended to be generic in nature, allowing for the client to reply
-   with any type of attestation evidence or attestation result that
-   contains the requested information.  As such, these values are not
-   intended to map one-to-one with any specific remote attestation
-   evidence or attestation result format, but instead they are to serve
-   as a hint to the ACME Client about what type of attestation it needs
-   to collect from the device.  Ultimately, the CA's certificate
-   policies will be the authority on what evidence or attestation
-   results it will accept.
+   with any type of attestation result that contains the requested
+   information.  As such, these values are not intended to map one-to-
+   one with any specific remote attestation evidence or attestation
+   result format, but instead they are to serve as a hint to the ACME
+   Client about what type of attestation it needs to collect from the
+   device.  Ultimately, the CA's certificate policies will be the
+   authority on what evidence or attestation results it will accept.
 
    See Section 7.1 for the initial contents of this new registry.
 
@@ -370,7 +429,7 @@ Table of Contents
 
    1.  Integration/compatibility difficulty: Integrating SOC and NOC
        requires plenty of customized, case-by-case developing work.
-       Especially considering differrnt system vendors, system versions,
+       Especially considering different system vendors, system versions,
        different data models and formats due to different client
        needs... Let alone possible updates.
 
@@ -399,7 +458,20 @@ Table of Contents
 
 6.  Security Considerations
 
-   TODO Security
+   Only the Passport Model is supported.  This means that Evidence --
+   which may contain personally identifiable information (PII)) -- is
+   never seen by the ACME Server.  Although Evidence can be encrypted
+   from the Attester to the Verifier, in order to encrypt it, the
+   Attester needs to have a key to which to encrypt.  Coordination of
+   that key to the Attester, along with the trust relationship that the
+   ACME Server (as RATS Relying Party) requires results in a highly
+   constrained set of business relationships.  Supporting only the
+   Passport model allows the two relationships (Attester<->Verifier, and
+   ACME Server<->Verifier) to be managed independantly.
+
+   The trustworthy identifier and challenge/response is not an actual
+   identifier.  It does not result in any specific contents to the
+   certificate Subject or SubjectAltName.
 
 7.  IANA Considerations
 
@@ -449,11 +521,20 @@ Table of Contents
               Architecture", RFC 9334, DOI 10.17487/RFC9334, January
               2023, <https://www.rfc-editor.org/rfc/rfc9334>.
 
-   [CMW]      Birkholz, H., Smith, N., Fossati, T., Tschofenig, H., and
+   [I-D.ietf-rats-msg-wrap]
+              Birkholz, H., Smith, N., Fossati, T., Tschofenig, H., and
               D. Glaze, "RATS Conceptual Messages Wrapper (CMW)", Work
               in Progress, Internet-Draft, draft-ietf-rats-msg-wrap-17,
               12 August 2025, <https://datatracker.ietf.org/doc/html/
               draft-ietf-rats-msg-wrap-17>.
+
+   [I-D.ietf-rats-ar4si]
+              Voit, E., Birkholz, H., Hardjono, T., Fossati, T., and V.
+              Scarlata, "Attestation Results for Secure Interactions",
+              Work in Progress, Internet-Draft, draft-ietf-rats-ar4si-
+              09, 15 August 2025,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-rats-
+              ar4si-09>.
 
 8.2.  Informative References
 
@@ -464,12 +545,12 @@ Table of Contents
               July 2025, <https://datatracker.ietf.org/doc/html/draft-
               ietf-lamps-csr-attestation-20>.
 
-   [RATSPA]   Moriarty, K., Wiseman, M., and A. J. Stein, "Remote
-              Posture Assessment for Systems, Containers, and
-              Applications", Work in Progress, Internet-Draft, draft-
-              moriarty-rats-posture-assessment-01, 2 July 2024,
-              <https://datatracker.ietf.org/doc/html/draft-moriarty-
-              rats-posture-assessment-01>.
+   [RATSPA]   Moriarty, K., Wiseman, M., Stein, A. J., and C. Nelogal,
+              "Remote Posture Assessment for Systems, Containers, and
+              Applications at Scale", Work in Progress, Internet-Draft,
+              draft-ietf-rats-posture-assessment-03, 7 July 2025,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-rats-
+              posture-assessment-03>.
 
    [I-D.draft-bweeks-acme-device-attest-01]
               Weeks, B., "Automated Certificate Management Environment
@@ -483,6 +564,13 @@ Table of Contents
               Encrypting the Web with Let’s Encrypt", 20 August 2025,
               <https://www.eff.org/deeplinks/2023/08/celebrating-ten-
               years-encrypting-web-lets-encrypt>.
+
+   [RFC9684]  Birkholz, H., Eckel, M., Bhandari, S., Voit, E., Sulzen,
+              B., Xia, L., Laffey, T., and G. C. Fedorkow, "A YANG Data
+              Model for Challenge-Response-Based Remote Attestation
+              (CHARRA) Procedures Using Trusted Platform Modules
+              (TPMs)", RFC 9684, DOI 10.17487/RFC9684, December 2024,
+              <https://www.rfc-editor.org/rfc/rfc9684>.
 
 Acknowledgments
 
