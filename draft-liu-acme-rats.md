@@ -61,7 +61,7 @@ The ACME Server can optionally challenge the Client for specific claims that it 
 # Introduction
 
 ACME {{RFC8555}} is a standard protocol for issuing and renewing certificates automatically.
-ACME clients needing a certificate from a certification authority connect to the ACME server, provide a proof of control of a desired identity, and then receive a certificate with that identity in it.
+When an ACME client needs a certificate, it connects to the ACME server, providing a proof of control of a desired identity. Upon success, it then receives a certificate with that identity in it.
 
 These identities become part of the certificate, usually a Fully Qualified Domain Name (FQDN) that goes into the Subject Alt Name (SAN) for a certificate.
 Prior to ACME, the authorization process of obtaining a certificate from an operator of a (public) certification authority was non-standard and ad-hoc.
