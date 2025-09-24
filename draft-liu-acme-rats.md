@@ -35,51 +35,118 @@ author:
     email: mcr+ietf@sandelman.ca
 normative:
   RFC8555:
-  CMW: I-D.draft-ietf-rats-msg-wrap
+  RFC9334:
+  I-D.ietf-rats-msg-wrap: CMW
+  I-D.ietf-rats-ar4si: AR4SI
 informative:
   CSRATT: I-D.ietf-lamps-csr-attestation
-  RATSPA: I-D.draft-moriarty-rats-posture-assessment
+  RATSPA: I-D.ietf-rats-posture-assessment
   I-D.draft-bweeks-acme-device-attest-01: device-attest-01
+  letsencrypt:
+    target:    https://www.eff.org/deeplinks/2023/08/celebrating-ten-years-encrypting-web-lets-encrypt
+    title: "Celebrating Ten Years of Encrypting the Web with Let’s Encrypt"
+    author:
+      org:
+      - "Electronic Frontier Foundation"
+    date: 2025-08-20
 
 --- abstract
 
-This document describes an approach where an ACME Server can challenge an ACME Client to provide a Remote Attestation Evidence or Remote Attestation Result in any format supported by the Conceptual Message Wrapper. The ACME Server can optionally challenge the Client for specific claims that it wishes attestation for.
+This document describes an approach where an ACME Server can challenge an ACME Client to provide a Remote Attestation Evidence or Remote Attestation Result in any format supported by the Conceptual Message Wrapper.
+
+The ACME Server can optionally challenge the Client for specific claims that it wishes attestation for.
 
 --- middle
 
 # Introduction
 
-ACME {{RFC8555}} is a standard protocol for issuing and renewing certificates automatically, widely used in the Internet scenario, help an ACME Client prove its ownership to an identifier like domain name or email address.
+ACME {{RFC8555}} is a standard protocol for issuing and renewing certificates automatically.
+When an ACME client needs a certificate, it connects to the ACME server, providing a proof of control of a desired identity. Upon success, it then receives a certificate with that identity in it.
 
-In order to prevent issuing certificates to malicious devices, a few works are ongoing in the LAMPS and RATS WG.
+These identities become part of the certificate, usually a Fully Qualified Domain Name (FQDN) that goes into the Subject Alt Name (SAN) for a certificate.
+Prior to ACME, the authorization process of obtaining a certificate from an operator of a (public) certification authority was non-standard and ad-hoc.
+It ranged from sending faxes on company letterhead to answering an email sent to a well-known email address like `hostmaster@example.com`, evolving into a process where some randomized nonce could be placed in a particular place on the target web server.
+The point of this process is to prove that the given DNS FQDN was controlled by the client system.
 
-- {{CSRATT}} define trustworthy claims about device's platform generating the certification signing requests (CSR) and the private key resides on this platform.
-- {{RATSPA}} define a summary of a local assessment of posture for managed systems and across various layers.
+ACME standardized the process, allowing for automation for certificate issuance.
+It has been a massive success: increasing HTTPS usage from 27% in 2013 to over 80% in 2019 {{letsencrypt}}.
 
-This document builds on {{I-D.draft-bweeks-acme-device-attest-01}} which provides a mechanism for WebAuthn attestations over ACME. This document is broader in scope to support a broad range of attestation formats.
+While the process supports many kinds of identifiers: email addresses, DTN node IDs, and can create certificates for client use.
+However, these combinations have not yet become as popular, in part because these types of certificates are usually located on much more general purpose systems such as laptops and computers used by people.
 
-In this document, we propose an approach where ACME Server MAY challenge the ACME Client to produce an Attestation Evidence or Attestation Result in any format that is supported by the RATS Conceptual Message Wrapper {{CMW}}. The ACME Server then checks if the ACME Clients presented a valid remote attestation evidence or remote attestation result, for instance, an EAT (entity attestation token). The ACME Server MAY perform any necessary checks against the provided remote attestation, as required by by the requested certificate profile; this conforms to the RATS concept of an Appraisal Policy.
+The concern that Enterprises have with the use of client side certificates has been the trustworthiness of the client system itself.
+Such systems have many more configurations, and are often considered harder to secure as a result.
+While well managed mutual TLS (client and server authentication via PKIX certificate) has significant advantages over the more common login via username/passowrd,  if the private key associated with a client certificates is disclosed or lost, then the impact can be more significant.
 
-This document defines a new ACME "rats" identifier and the challenge types "device-attest-02" and "device-attest-03" which are respectively use to challenge for a RATS background check and passport model type attestation. In this way, the CA / RA issues certificates only to devices that can provide an appropriate attestation result, indicating such device has passed the required security checks. By repeating this process and issuing only short-lived certificates to qualified devices, we also fulfill the continuous monitoring/validation requirement of Zero-Trust principle.
+The use case envisioned here is that of an enterprise.  A Network Operations Center (NOC)
+(which may be internal or an external contracted entity) will issue (client) certificates to devices that can prove via remote attestation that they are running an up-to-date operating system as well as the enterprise-required endpoint security software.
 
-Some example use cases include an enterprise scenario where Network Operations Center (NOC) issue certificates to devices that can prove via remote attestation that they are running an up-to-date operating system as well as the enterprise-required endpoint security software. Another example is issuing S/MIME certificates to BYOD devices only if they can prove via attestation that they are registered to a corporate MDM and the user they are registered to matches the user for which a certificate has been requested.
+This is a place where Remote Attestation can offer additional assurance {{RFC9334}}.
+If the software on the client is properly designed, and is up to date, then it is easier to assure that the private key will be safe.
+
+This can be extended to Bring Your Own Device (BYOD) by having those devices provide an equivalent Attestation Result.
+
+This document defines an extension to ACME that allows an ACME server to received the signed (and fresh) Attestation Result.
+
+ACME can presently offer certificates with multiple identities.
+Typically, in a server certificate situation, each identity represents a unique FQDN that would be placed into the certificate as distinct Subject Alt Names (SAN).
+For instance each of the names: example.com, www.example.com, www.example.net and marketing.example.com might be placed in a single certificate for a server that provides web content under those four names.
+
+This document defines a new identity type, `trustworthy` that the ACME client can ask for.
+The new `attestation-result-01` challenge is defined as a new method that can be used to authorize this identity.
 
 For ease of denotion, we omit the "ACME" adjective from now on, where Server means ACME Server and Client means ACME Client.
 
+## Attestation Results only
 
-# Extensions -- rats identifier
+This document currently only defines the a mechanism to carry Attestation Results from the ACME client to the ACME server.
+It limits itself to the Passport model defined in {{RFC9334}}.
 
-An rats identifier type represents a unique identifier to an attestation result. It extends a "rats" identifier type and a string value.
+This is done to simplify the combinations, but also because it is likely that the Evidence required to make a reasonable assessment includes potentially privacy violating claims.
+This is particularly true when a device is a personal (BYOD) device; in that case the Verifier might not even be owned by the Enterprise,  but rather the device manufacturer.
+
+In order to make use of the background check that Evidence would need to be encrypted from the Attesting Environment to the Verifier, via the ACME Server -- the Relying Party.
+Secondly, in order for the ACME Server to be able to securely communicate with an Enterprise located Verifier with that Evidence, then more complex trust relationships would need to be established.
+Thirdly, the Enterprise Verifier system would then have to expose itself to the ACME Server, which may be located outside of the Enterprise.
+The ACME Server, for resiliency and loading reasons may be a numerous and dynamic cluster of systems, and providing appropriate network access controls to enable this communication may be difficult.
+
+Instead, the use of the Passport model allows all Evidence to remain within an Enterprise,
+and for Verifier operations to be more self-contained.
+
+## Related work
+
+{{CSRATT}} define trustworthy claims about the physical storage location of a key pair's private key.
+This mechanism only relates to how the private key is kept.
+It does not provide any claim about the rest of the mechanisms around access to the key.
+A key could well be stored in the most secure way imaginable, but in order to use the key some command mechanism must exist to invoke it.
+
+The mechanism created in this document allows certification authority to access the trustworthiness of the entire system.
+That accessment goes well beyond how and where the private key is stored.
+ACME uses Certificate Signing Requests, so there is no reason that {{CSRATT}} could not be combined with the mechanism described in this document.
+
+{{RATSPA}} defines a summary of a local assessment of posture for managed systems and across various  layers.
+The claims and mechanisms defined in {{RATSPA}} are a good basis for the assessment that will need to be done in order to satisfy the trustworthiness challenge detailed in this document.
+
+# Extensions -- trustworthy identifier
+
+This is a new identifier type.
 
 type (required, string):
-: The string "rats".
+: The string "trusthworthy".
 
 value (required, string):
-: The identifier itself.
+: The constant string "trustworthy"
 
-The following steps are the ones that will be affected:
+The following sections detail the changes.
 
-1\. newOrder Request Object - identifiers: During the certificate order creation step, the Client sends a /newOrder JWS request (Section 7.4 of {{RFC8555}}) whose payload contains an array of identifiers. The Client adds an rats identifier to the array.
+## Step 1: newOrder Request Object
+
+During the certificate order creation step, the Client sends a /newOrder JWS request (Section 7.4 of {{RFC8555}}) whose payload contains an array of identifiers.
+
+The client adds the `trustworthy` identifier to the array.
+
+This MUST NOT be the only identifier in the array, as this identity type does not, on its own, provide enough authorization to issue a certificate.
+In this example, a `dns` identity is chosen for the domain name `client01.finance.example`.
 
 An example extended newOrder JWS request:
 
@@ -90,112 +157,165 @@ An example extended newOrder JWS request:
     }),
     "payload": base64url({
       "identifiers": [
-        { "type": "rats", "value": "0123456789abcdef" },
+        { "type": "truthworthy", "value": "trustworthy" },
+        { "type": "dns", "value": "client01.finance.example" },
       ],
     }),
     "signature": "H6ZXtGjTZyUnPeKn...wEA4TklBdh3e454g"
   }
 ~~~~~~~~~~
 
-2\. Order Object - identifiers: After a newOrder request is sent to the Server, the Account Object creates an Order Object (Section 7.1.3 of {{RFC8555}}) with "rats" identifiers and values from Step 1.
+## Step 2: Order Object
 
-An example extended Order Object:
+As explained in {{RFC8555, Section 7.1.3}}, the server returns an Order Object.
+
+An example extended Order Object that includes
 
 ~~~~~~~~~~
   {
     "status": "pending",
 
     "identifiers": [
-      { "type": "rats", "value": "0123456789abcdef" },
+      { "type": "trustworthy", "value": "trustworthy" },
+      { "type": "dns",         "value": "0123456789abcdef" },
     ],
 
     "authorizations": [
       "https://example.com/acme/authz/PAniVnsZcis",
+      "https://example.com/acme/authz/C1uq5Dr+x8GSEJTSKW5B",
     ],
 
     "finalize": "https://example.com/acme/order/T..fgo/finalize",
   }
 ~~~~~~~~~~
 
-3\. Authorization Object - identifier: The Server creates an Authorization Object that has rats identifier (Section 7.1.4 of {{RFC8555}})
+Note that the URLs listed in the `authorizations` array are arbitrary URLs created by the ACME server.
+The last component is a randomly created string created by the server.
+For simplicity, the first URL is identical to the example given in {{RFC8555}}.
 
-4\. Challenge Object - identifier: The Server creates a Challenge Object that has rats challenge type.
+## Step 3: Authorization Object
 
-An example extended Authorization Object (that contains a Challenge Object):
+The Server has created an Authorization Object for the trustworthy and dns identifiers.
+
+The client accesses each authorization object from the URLs given in the Order Object.
+In this example, the `PAniVnsZcis` authorization relates to the `dns` identifier, and
+it is not changed from {{RFC8555, Section 8}}.
+
+The `C1uq5Dr+x8GSEJTSKW5B` authorization is a new authorization type, `trustworthy`, it is detailed in {{trustworthyauthorization}}.
+
+Here is an example:
 
 ~~~~~~~~~~
-{
-  "status": "pending",
+   {
+     "status": "pending",
+     "expires": "2025-09-30T14:09:07.99Z",
 
-  "identifier": {
-    "type": "rats",
-    "value": "0123456789abcdef"
-  },
+     "identifier": {
+       "type": "trustworthy",
+       "value": "trustworthy"
+     },
 
-  "challenges": [
-    {
-      "type": "rats",
-      "url": "https://example.com/acme/chall/prV_B7yEyA4",
-      "status": "pending",
-      "token": "DGyRejmCefe7v4NfDGDKfA",
-    },
-    {
-      "type": "http-01",
-      "url": "https://example.com/acme/chall/prV_B7yEyA4",
-      "status": "pending",
-      "token": "DGyRejmCefe7v4NfDGDKfA",
-    }
-  ],
-}
+     "challenges": [
+       {
+         "type": "trustworthy",
+         "status": "pending",
+         "token": "yoW1RL2zPBzYEHBQ06Jy",
+         "url": "https://example.com/acme/chall/prV_8235AD9d",
+       }
+     ],
+   }
 ~~~~~~~~~~
 
+## Step 4: Obtain Attestation Result
 
-# Extensions -- rats challenge types
+The client now uses the token `yoW1RL2zPBzYEHBQ06Jy` as a fresh nonce.
+It produces fresh Evidence, and provides this to the Verifier.
 
-A rats challenge type help the Client prove ownership to its attestation result identifier. This section describes the challenge/response extensions and procedures to use them.
+The details of this step are not in scope for this document.
+As an example, it might use TPM-CHARRA {{?RFC9684}}, or X, or Y (XXX: insert more options)
 
-## device-attest-02 Challenge {#rats01}
+The format result is described in {{response}}.
+(An example from {{-AR4SI}} would be good here)
+Assume the following binary blob is the response:
 
-device-attest-02 Challenge simply works with Passport Model of RATS. The corresponding Challenge Object is:
+~~~~~~~~~~
+yePAuQj5xXAnz87/7ItOkDTk5Y4syoW1RL2zPBzYEHBQ06JyUvZDYPYjeTqwlPszb9Grbxw0UAEFx5DxObV1
+~~~~~~~~~~
+
+This result is sent as a POST to `https://example.com/acme/chall/prV_8235AD9d`
+
+The Server decodes the provided CMW {{-CMW}}.
+The Attestation Results found within will be digitally signed by the Verifier.
+
+The Server MUST verify the signature.
+The signature MUST be from a Verifier that the ACME Server has a trust anchor for.
+The list of trust anchors that a Server will trust is an attribute of the ACME Account in use.
+The details of how these trust anchors are configured is not in scope for this document.
+
+At this point, if the client were to retrieve the authorization object from step 3, it would observe (if everything was accepted, verified) that the status for this challenge would now be marked as valid.
+
+## Step 5: Perform other challenges
+
+The client SHOULD now perform any other challenges that were listed in the Order Object from step 2.
+ACME provides no ordering constraint on the challenges, so they could well have occured concurrently.
+
+## Step 6: Finalize Order, retrieve certificate
+
+At this point, the process continues as described in {{RFC8555, Section 7.4}}.
+This means that the finalize action is used, which includes a CSR.
+If all is well, it will result in a certificate being issued.
+
+
+# ACME Extensions -- trusthworthy challenge types {#trustworthyauthorization}
+
+A `trustworthy` challenge type asks the Client to prove provide a fresh Attestation Result.
+This section describes the challenge/response extensions and procedures to use them.
+
+## trusthworthy Challenge
+
+The `trustworthy` Challenge works with Passport Model of RATS.
+
+The corresponding Challenge Object is:
 
 type (required, string):
-: The string "device-attest-02".
-
-url (required, string):
-: The URL that the Client post its response to.
+: The string "trustworthy".
 
 token (required, string):
-: Same as Section 8.3 of RFC8555.
-
-nonce (optional, string):
-: If attestation freshness is required, then the Server MAY present a nonce which then MUST be echoed in the provided attestation. In some situations, the nonce will come from a separate RATS Verifier, and therefore needs to be a distinct value from the ACME token.
+: A randomly created nonce provided by the server which MUST be included in the Attestation Results to provide freshness.
 
 attestClaimsHint (optional, list of string)
 : If the Server requires attestation of specific claims or properties in order to issue the requested certificate profile, then it MAY list one or more types of claims from the newly-defined ACME Attest Claims Hints registry defined in {{claimshints}}.
 
-The response sent to the url is:
+Once fresh Attestation Results have been obtained from an appropriate RATS Verifier, then this result is posted to the URL provided in the `url` attribute.
 
-~~~~~~~~~~
-keyAuthorization = token || '.' || cmw
-~~~~~~~~~~
+## truthworthy Response {#response}
 
-where `cmw` MAY be either a CMW in JWT format, or a Base64 CMW in CWT format as per {{CMW}}.
-
-## device-attest-03 Challenge {#rats02}
-
-device-attest-03 Challenge works the same way as device-attest-02, but expects the Client to return RATS evidence in accordance with the Background Check Model of RATS.
+The data sent SHOULD be Attestation Results in the form of of a CMW {{-CMW, Section 5.2}} tagged CBOR encoded Attestation Results for Secure Interactions (AR4SI) {{-AR4SI}}.
+The CM-type MUST include attestation-results, and MUST NOT include any other wrapped values.
+Other formats are permitted by prior arrangement, however, they MUST use the CMW format so that they can be distinguished.
 
 # ACME Attest Claims Hint Registry {#claimshints}
 
-In order to facilitate the Server requesting attestation of specific types claims or properties, we define a new registry of ACME Claims Hints. In order to preserve flexibility, the Claim Hints are intended to be generic in nature, allowing for the client to reply with any type of attestation evidence or attestation result that contains the requested information. As such, these values are not intended to map one-to-one with any specific remote attestation evidence or attestation result format, but instead they are to serve as a hint to the ACME Client about what type of attestation it needs to collect from the device. Ultimately, the CA's certificate policies will be the authority on what evidence or attestation results it will accept.
+In order to facilitate the Server requesting attestation of specific types claims or properties, we define a new registry of ACME Claims Hints. In order to preserve flexibility, the Claim Hints are intended to be generic in nature, allowing for the client to reply with any type of attestation result that contains the requested information.
+As such, these values are not intended to map one-to-one with any specific remote attestation evidence or attestation result format, but instead they are to serve as a hint to the ACME Client about what type of attestation it needs to collect from the device. Ultimately, the CA's certificate policies will be the authority on what evidence or attestation results it will accept.
 
 See {{iana-claimshints}} for the initial contents of this new registry.
 
 # Example use case
 
+## Conflicting duties
+
+(EDIT: This text might be stale)
+
+1. Integration/compatibility difficulty: Integrating SOC and NOC requires plenty of customized, case-by-case developing work. Especially considering different system vendors, system versions, different data models and formats due to different client needs... Let alone possible updates.
+
+2. Conflict of duties: NOC people do not want SOC people to interfere with their daily work, and so do SOC people. Also, NOC people may have limited security knowledge, and SOC people vice versa. Where to draw the line and what is the best tool to help them collaborate is a question.
+
+
 ## Enterprise WiFi Access
 
-In enterprise access cases, security administrators wish to check the security status of an accessing end device before it connects to the internal network. Endpoint Detection and Response (EDR) softwares can check the security/trustworthiness statuses of the device and produce an Attestation Result (AR) if the check passes. ACME-RATS procedures can then be used to redeem a certificate using the AR.
+In enterprise access cases, security administrators wish to check the security status of an accessing end device before it connects to the internal network.
+Endpoint Detection and Response (EDR) softwares can check the security/trustworthiness statuses of the device and produce an Attestation Result (AR) if the check passes. ACME-RATS procedures can then be used to redeem a certificate using the AR.
 
 With that being said, a more specific use case is as follows: an enterprise employee visits multiple campuses, and connects to each one's WiFi. For example, an inspector visits many (tens of) power substations a day, connects to the local WiFi, download log data, proceed to the next and repeat the process.
 
@@ -205,14 +325,21 @@ a. Bring Your Own Device (BYOD) situation and MDM is not available.
 b. Password could risk leakage due to APP compromise, or during Internet transmission. Anyone with leaked password can access, without binding of trusted/usual devices.
 c. The RADIUS Client/Access Point/Switch is not aware of the identity of the accessing device, therefore cannot enforce more fine-grained access policies.
 
-An ideal user story is: 
+An ideal user story is:
 1. When the inspector is at base (or whenever the Remote Attestation-based check is available), he get his device inspected and redeem a certificate using ACME-RATS.
 2. When at substation, the inspector authenticate to the WiFi using EAP-TLS, where all the substations have the company root CA installed.
 2*. Alternatively, the Step 2 can use EAP-repeater mode, where the RADIUS Client redirects the request back to the RADIUS Server for more advanced checks.
 
 # Security Considerations
 
-TODO Security
+Only the Passport Model is supported.
+This means that Evidence -- which may contain personally identifiable information (PII)) -- is never seen by the ACME Server.
+Although Evidence can be encrypted from the Attester to the Verifier, in order to encrypt it, the Attester needs to have a key to which to encrypt.
+Coordination of that key to the Attester, along with the trust relationship that the ACME Server (as RATS Relying Party) requires results in a highly constrained set of business relationships.
+Supporting only the Passport model allows the two relationships (Attester<->Verifier, and ACME Server<->Verifier) to be managed independantly.
+
+The `trustworthy` identifier and challenge/response is not an actual identifier.
+It does not result in any specific contents to the certificate Subject or SubjectAltName.
 
 # IANA Considerations
 
