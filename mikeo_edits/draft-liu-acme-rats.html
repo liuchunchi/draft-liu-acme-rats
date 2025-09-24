@@ -1367,6 +1367,8 @@ In this example, a <code>dns</code> identity is chosen for the domain name <code
 <p id="section-2.1-4">An example extended newOrder JWS request:<a href="#section-2.1-4" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-2.1-5">
 <pre>
+  POST /acme/new-order HTTP/1.1
+  Content-Type: application/json
   {
     "protected": base64url({
       "alg": "ES256",
@@ -1392,6 +1394,11 @@ In this example, a <code>dns</code> identity is chosen for the domain name <code
 <p id="section-2.2-2">An example extended Order Object that includes<a href="#section-2.2-2" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-2.2-3">
 <pre>
+  POST /acme/new-order HTTP/1.1
+  ...
+
+  HTTP/1.1 200 OK
+  Content-Type: application/json
   {
     "status": "pending",
 
@@ -1427,6 +1434,11 @@ it is not changed from <span>[<a href="#RFC8555" class="cite xref">RFC8555</a>],
 <p id="section-2.3-4">Here is an example:<a href="#section-2.3-4" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-2.3-5">
 <pre>
+   GET https://example.com/acme/authz/C1uq5Dr+x8GSEJTSKW5B HTTP/1.1
+   ..
+
+   HTTP/1.1 200 OK
+   Content-Type: application/json
    {
      "status": "pending",
      "expires": "2025-09-30T14:09:07.99Z",
@@ -1459,21 +1471,27 @@ It produces fresh Evidence, and provides this to the Verifier.<a href="#section-
 <p id="section-2.4-2">The details of this step are not in scope for this document.
 As an example, it might use TPM-CHARRA <span>[<a href="#RFC9684" class="cite xref">RFC9684</a>]</span>, or X, or Y (XXX: insert more options)<a href="#section-2.4-2" class="pilcrow">¶</a></p>
 <p id="section-2.4-3">The format result is described in <a href="#attestation-response" class="auto internal xref">Section 3.2</a> and <a href="#evidence-response" class="auto internal xref">Section 4.2</a>.
-(An example from <span>[<a href="#I-D.ietf-rats-ar4si" class="cite xref">I-D.ietf-rats-ar4si</a>]</span> would be good here)
-Assume the following binary blob is the response:<a href="#section-2.4-3" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-2.4-4">
+(An example from <span>[<a href="#I-D.ietf-rats-ar4si" class="cite xref">I-D.ietf-rats-ar4si</a>]</span> would be good here)<a href="#section-2.4-3" class="pilcrow">¶</a></p>
+<p id="section-2.4-4">This result is sent as a POST to <code>https://example.com/acme/chall/prV_8235AD9d</code><a href="#section-2.4-4" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.4-5">
 <pre>
-yePAuQj5xXAnz87/7ItOkDTk5Y4syoW1RL2zPBzYEHBQ06JyUvZDYPYjeTqwlPszb9Grbxw0UAEFx5DxObV1
-</pre><a href="#section-2.4-4" class="pilcrow">¶</a>
+   POST https://example.com/acme/chall/prV_8235AD9d HTTP/1.1
+   ..
+
+   HTTP/1.1 200 OK
+   Content-Type: application/cmw+cbor
+
+   yePAuQj5xXAnz87/7ItOkDTk5Y4syoW1RL2zPBzYEHBQ06JyUvZDYPYjeTqwlPszb9Grbxw0UAEFx5DxObV1
+</pre><a href="#section-2.4-5" class="pilcrow">¶</a>
 </div>
-<p id="section-2.4-5">This result is sent as a POST to <code>https://example.com/acme/chall/prV_8235AD9d</code><a href="#section-2.4-5" class="pilcrow">¶</a></p>
-<p id="section-2.4-6">The Server decodes the provided CMW <span>[<a href="#I-D.ietf-rats-msg-wrap" class="cite xref">I-D.ietf-rats-msg-wrap</a>]</span>.
-The Attestation Results found within will be digitally signed by the Verifier.<a href="#section-2.4-6" class="pilcrow">¶</a></p>
-<p id="section-2.4-7">The Server MUST verify the signature.
+<p id="section-2.4-6">(EDIT: change to cwm+jws example)<a href="#section-2.4-6" class="pilcrow">¶</a></p>
+<p id="section-2.4-7">The Server decodes the provided CMW <span>[<a href="#I-D.ietf-rats-msg-wrap" class="cite xref">I-D.ietf-rats-msg-wrap</a>]</span>.
+The Attestation Results found within will be digitally signed by the Verifier.<a href="#section-2.4-7" class="pilcrow">¶</a></p>
+<p id="section-2.4-8">The Server MUST verify the signature.
 The signature MUST be from a Verifier that the ACME Server has a trust anchor for.
 The list of trust anchors that a Server will trust is an attribute of the ACME Account in use.
-The details of how these trust anchors are configured is not in scope for this document.<a href="#section-2.4-7" class="pilcrow">¶</a></p>
-<p id="section-2.4-8">At this point, if the client were to retrieve the authorization object from step 3, it would observe (if everything was accepted, verified) that the status for this challenge would now be marked as valid.<a href="#section-2.4-8" class="pilcrow">¶</a></p>
+The details of how these trust anchors are configured is not in scope for this document.<a href="#section-2.4-8" class="pilcrow">¶</a></p>
+<p id="section-2.4-9">At this point, if the client were to retrieve the authorization object from step 3, it would observe (if everything was accepted, verified) that the status for this challenge would now be marked as valid.<a href="#section-2.4-9" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="step-5-perform-other-challenges">
