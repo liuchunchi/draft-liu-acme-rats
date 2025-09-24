@@ -41,6 +41,7 @@ normative:
 informative:
   CSRATT: I-D.ietf-lamps-csr-attestation
   RATSPA: I-D.ietf-rats-posture-assessment
+  RATSKA: I-D.ietf-rats-pkix-key-attestation
   I-D.draft-bweeks-acme-device-attest-01: device-attest-01
   letsencrypt:
     target:    https://www.eff.org/deeplinks/2023/08/celebrating-ten-years-encrypting-web-lets-encrypt
@@ -86,14 +87,20 @@ If the software on the client is properly designed, and is up to date, then it i
 
 This can be extended to Bring Your Own Device (BYOD) by having those devices provide an equivalent Attestation Result.
 
-This document defines an extension to ACME that allows an ACME server to received the signed (and fresh) Attestation Result.
+In this document, we propose an approach where ACME Server MAY challenge the ACME Client to produce an Attestation Evidence or Attestation Result in any format that is supported by the RATS Conceptual Message Wrapper {{-CMW}}, for instance, an EAT (entity attestation token).
+The ACME Server then verifies the attestation result against an appraisal policy as required by by the requested certificate profile.
 
 ACME can presently offer certificates with multiple identities.
 Typically, in a server certificate situation, each identity represents a unique FQDN that would be placed into the certificate as distinct Subject Alt Names (SAN).
 For instance each of the names: example.com, www.example.com, www.example.net and marketing.example.com might be placed in a single certificate for a server that provides web content under those four names.
 
 This document defines a new identity type, `trustworthy` that the ACME client can ask for.
-The new `attestation-result-01` challenge is defined as a new method that can be used to authorize this identity.
+A new `attestation-result-01` challenge is defined as a new method that can be used to authorize this identity using a RATS Passport model.
+The `encrypted-evidence-02` challenge is also defined, enabling a background check mechanism.
+
+In this way, the Certification Authority (CA) or Registration Authority (RA) issues certificates only to devices that can provide an appropriate attestation result, indicating that the device from which the ACME request originates has passed the required security checks.
+
+Attested ACME requests can form an essential building block towards the continuous monitoring/validation requirement of Zero-Trust principle when coupled with other operational measures, such as issuing only short-lived certificates.
 
 For ease of denotion, we omit the "ACME" adjective from now on, where Server means ACME Server and Client means ACME Client.
 
@@ -151,6 +158,8 @@ In this example, a `dns` identity is chosen for the domain name `client01.financ
 An example extended newOrder JWS request:
 
 ~~~~~~~~~~
+  POST /acme/new-order HTTP/1.1
+  Content-Type: application/json
   {
     "protected": base64url({
       "alg": "ES256",
@@ -172,6 +181,11 @@ As explained in {{RFC8555, Section 7.1.3}}, the server returns an Order Object.
 An example extended Order Object that includes
 
 ~~~~~~~~~~
+  POST /acme/new-order HTTP/1.1
+  ...
+
+  HTTP/1.1 200 OK
+  Content-Type: application/json
   {
     "status": "pending",
 
@@ -201,11 +215,16 @@ The client accesses each authorization object from the URLs given in the Order O
 In this example, the `PAniVnsZcis` authorization relates to the `dns` identifier, and
 it is not changed from {{RFC8555, Section 8}}.
 
-The `C1uq5Dr+x8GSEJTSKW5B` authorization is a new authorization type, `trustworthy`, it is detailed in {{trustworthyauthorization}}.
+The `C1uq5Dr+x8GSEJTSKW5B` authorization is a new authorization type, `trustworthy`, it is detailed in {{trustworthyauthorization}} and {{evidenceauthorization}}.
 
 Here is an example:
 
 ~~~~~~~~~~
+   GET https://example.com/acme/authz/C1uq5Dr+x8GSEJTSKW5B HTTP/1.1
+   ..
+
+   HTTP/1.1 200 OK
+   Content-Type: application/json
    {
      "status": "pending",
      "expires": "2025-09-30T14:09:07.99Z",
@@ -234,15 +253,22 @@ It produces fresh Evidence, and provides this to the Verifier.
 The details of this step are not in scope for this document.
 As an example, it might use TPM-CHARRA {{?RFC9684}}, or X, or Y (XXX: insert more options)
 
-The format result is described in {{response}}.
+The format result is described in {{attestation-response}} and {{evidence-response}}.
 (An example from {{-AR4SI}} would be good here)
-Assume the following binary blob is the response:
-
-~~~~~~~~~~
-yePAuQj5xXAnz87/7ItOkDTk5Y4syoW1RL2zPBzYEHBQ06JyUvZDYPYjeTqwlPszb9Grbxw0UAEFx5DxObV1
-~~~~~~~~~~
 
 This result is sent as a POST to `https://example.com/acme/chall/prV_8235AD9d`
+
+~~~~~~~~~~
+   POST https://example.com/acme/chall/prV_8235AD9d HTTP/1.1
+   ..
+
+   HTTP/1.1 200 OK
+   Content-Type: application/cmw+cbor
+
+   yePAuQj5xXAnz87/7ItOkDTk5Y4syoW1RL2zPBzYEHBQ06JyUvZDYPYjeTqwlPszb9Grbxw0UAEFx5DxObV1
+~~~~~~~~~~
+
+(EDIT: change to cwm+jws example)
 
 The Server decodes the provided CMW {{-CMW}}.
 The Attestation Results found within will be digitally signed by the Verifier.
@@ -266,19 +292,19 @@ This means that the finalize action is used, which includes a CSR.
 If all is well, it will result in a certificate being issued.
 
 
-# ACME Extensions -- trusthworthy challenge types {#trustworthyauthorization}
+# ACME Extensions -- attestation-result-01 challenge type {#trustworthyauthorization}
 
-A `trustworthy` challenge type asks the Client to prove provide a fresh Attestation Result.
+A `attestation-result-01` challenge type asks the Client to prove provide a fresh Attestation Result.
 This section describes the challenge/response extensions and procedures to use them.
 
-## trusthworthy Challenge
+## attestation-result-01 Challenge
 
-The `trustworthy` Challenge works with Passport Model of RATS.
+The `attestation-result-01` Challenge works with Passport Model of RATS.
 
 The corresponding Challenge Object is:
 
 type (required, string):
-: The string "trustworthy".
+: The string "attestation-result-01".
 
 token (required, string):
 : A randomly created nonce provided by the server which MUST be included in the Attestation Results to provide freshness.
@@ -288,20 +314,52 @@ attestClaimsHint (optional, list of string)
 
 Once fresh Attestation Results have been obtained from an appropriate RATS Verifier, then this result is posted to the URL provided in the `url` attribute.
 
-## truthworthy Response {#response}
+## attestion-result-01 Response {#attestation-response}
 
-The data sent SHOULD be Attestation Results in the form of of a CMW {{-CMW, Section 5.2}} tagged CBOR encoded Attestation Results for Secure Interactions (AR4SI) {{-AR4SI}}.
+The data sent SHOULD be Attestation Results in the form of of a CMW {{-CMW, Section 5.2}} tagged JSON encoded Attestation Results for Secure Interactions (AR4SI) {{-AR4SI}}.
 The CM-type MUST include attestation-results, and MUST NOT include any other wrapped values.
+Other formats are permitted by prior arrangement, however, they MUST use the CMW format so that they can be distinguished.
+
+# ACME Extensions -- encrypted-evidence-01 challenge type {#evidenceauthorization}
+
+A `encrypted-evidence-01` challenge type asks the Client to send fresh Evidence to the Server.
+The Server will use the RATS background model to connect to a Verifier, obtaining Attestation Results.
+
+## encrypted-evidence-01 Challenge
+
+The `encrypted-evidence-01` Challenge works with Background Model of RATS.
+
+The corresponding Challenge Object is:
+
+type (required, string):
+: The string "encrypted-evidence-01".
+
+token (required, string):
+: A randomly created nonce provided by the server which MUST be included in the Evidence to provide freshness.
+
+verifierEncryptionCredential (optional, base64 encoded)
+: Evidence of a device state will usually include device specific identities, and this is often one to one linkable to a person, therefore has Personally Identifiable Information (PII).  The Server does not need to see this information, so the Evidence needs to be encrypted to a key that only the Verifier possesses.
+
+## attestion-result-01 Response {#evidence-response}
+
+Once fresh Evidence has been collected, then it is posted to the URL provided in the `url` attribute.
+
+The data sent SHOULD be Edvidence in the form of of a CMW {{-CMW, Section 5.2}} tagged JSON encoded Evidence.
+The CM-type MUST include Evidence, and MUST NOT include any other wrapped values.
 Other formats are permitted by prior arrangement, however, they MUST use the CMW format so that they can be distinguished.
 
 # ACME Attest Claims Hint Registry {#claimshints}
 
+(EDIT: unclear if this is still important)
+
 In order to facilitate the Server requesting attestation of specific types claims or properties, we define a new registry of ACME Claims Hints. In order to preserve flexibility, the Claim Hints are intended to be generic in nature, allowing for the client to reply with any type of attestation result that contains the requested information.
 As such, these values are not intended to map one-to-one with any specific remote attestation evidence or attestation result format, but instead they are to serve as a hint to the ACME Client about what type of attestation it needs to collect from the device. Ultimately, the CA's certificate policies will be the authority on what evidence or attestation results it will accept.
 
+The ACME Attest Claims Hint Registry is intended to help clients to collect evidence or attestation results that are most likely to be acceptable to the Server, but are not a guaranteed replacement for performing interoperability testing between a given attesting device and a given CA. Similarly, an ACME attestation hint may not map one-to-one with attestation functionality exposed by the underlying attesting device, so ACME clients might need to act as intermediaries mapping ACME hints to vendor-specific functionality on a per-hardware-vendor basis.
+
 See {{iana-claimshints}} for the initial contents of this new registry.
 
-# Example use case
+# Example use cases
 
 ## Conflicting duties
 
@@ -330,18 +388,45 @@ An ideal user story is:
 2. When at substation, the inspector authenticate to the WiFi using EAP-TLS, where all the substations have the company root CA installed.
 2*. Alternatively, the Step 2 can use EAP-repeater mode, where the RADIUS Client redirects the request back to the RADIUS Server for more advanced checks.
 
+## BYOD devices
+
+Another example is issuing S/MIME certificates to BYOD devices only if they can prove via attestation that they are registered to a corporate MDM and the user they are registered to matches the user for which a certificate has been requested.
+
+In this case, the Server might challenge the client to prove that it is properly-registered to the enterprise to the same user as the subject of the requested S/MIME certificate, and that the device is running the corporate-approved security agents.
+
+
+## FIPS private key
+
+Yet another example comes from cases where the requested certificate profile requires the subscriber private key to be in a Hardware Security Module, which can be attested for example via [RATSKA].
+
+TODO: expand ... CA/B CSBRs
+
 # Security Considerations
 
-Only the Passport Model is supported.
-This means that Evidence -- which may contain personally identifiable information (PII)) -- is never seen by the ACME Server.
-Although Evidence can be encrypted from the Attester to the Verifier, in order to encrypt it, the Attester needs to have a key to which to encrypt.
-Coordination of that key to the Attester, along with the trust relationship that the ACME Server (as RATS Relying Party) requires results in a highly constrained set of business relationships.
-Supporting only the Passport model allows the two relationships (Attester<->Verifier, and ACME Server<->Verifier) to be managed independantly.
+The attestation-result-01 challenge (the Passport Model) is the mandatory to implement.
+The encrypted-evidence-01 challenge (the background-check model) is optional.
+
+In all cases the Server has to be able to verify Attestation Results from the Verifier.
+To do that it requires appropriate trust anchors.
+
+In the Passport model, Evidence -- which may contain personally identifiable information (PII)) -- is never seen by the ACME Server.
+Additionally, there is no need for the Verifier to accept connections from ACME Server(s).
+The Attester/Verifier relationship used in the Passport Model leverages a pre-existing relationship.
+For instance if the Verifier is operated by the manufacturer of the Attester (or their designate), then this is the same relationship that would be used to obtain updated software/firmware.
+In this case, the trust anchors may also be publically available, but the Server does not need any further relationship with the Verifier.
+
+In the background-check model, Evidence is sent from the Attester to the ACME Server.
+The ACME Server then relays this Evidence to a Verifier.
+The Evidence is encrypted so that the Server it never able to see any PII which might be included.
+The choice of Verifier is more complex in the background-check model.
+Not only does ACME Server have to have the correct trust anchors to verify the resulting Attestation Results, but the ACME Server will need some kind of business relationship with the Verifier in order for the Verifier to be willing to appraise Evidence.
 
 The `trustworthy` identifier and challenge/response is not an actual identifier.
 It does not result in any specific contents to the certificate Subject or SubjectAltName.
 
 # IANA Considerations
+
+## ACME Attest Claims Hint Registry {#iana-claimshints}
 
 IANA is requested to open a new registry, XXXXXXXX
 
@@ -359,8 +444,6 @@ The initial registry contents is shown in the table below.
 | FIPS_mode        | Attestation that the device is currently booted in FIPS mode.                           |
 | OS_patch_level   | Attestation to the version or patch level of the device's operating system.             |
 | sw_manifest      | A manifest list of all software currently running on the device.                        |
-
-## ACME Attest Claims Hint Registry {#iana-claimshints}
 
 --- back
 
