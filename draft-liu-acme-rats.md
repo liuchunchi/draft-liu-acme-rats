@@ -39,7 +39,6 @@ normative:
   I-D.ietf-rats-msg-wrap: CMW
   I-D.ietf-rats-ar4si: AR4SI
 informative:
-  RFC9334:
   CSRATT: I-D.ietf-lamps-csr-attestation
   RATSPA: I-D.ietf-rats-posture-assessment
   RATSKA: I-D.ietf-rats-pkix-key-attestation
@@ -88,7 +87,7 @@ If the software on the client is properly designed, and is up to date, then it i
 
 This can be extended to Bring Your Own Device (BYOD) by having those devices provide an equivalent Attestation Result.
 
-In this document, we propose an approach where ACME Server MAY challenge the ACME Client to produce an Attestation Evidence or Attestation Result in any format that is supported by the RATS Conceptual Message Wrapper {{CMW}}, for instance, an EAT (entity attestation token).
+In this document, we propose an approach where ACME Server MAY challenge the ACME Client to produce an Attestation Evidence or Attestation Result in any format that is supported by the RATS Conceptual Message Wrapper {{-CMW}}, for instance, an EAT (entity attestation token).
 The ACME Server then verifies the attestation result against an appraisal policy as required by by the requested certificate profile.
 
 ACME can presently offer certificates with multiple identities.
@@ -209,7 +208,7 @@ The client accesses each authorization object from the URLs given in the Order O
 In this example, the `PAniVnsZcis` authorization relates to the `dns` identifier, and
 it is not changed from {{RFC8555, Section 8}}.
 
-The `C1uq5Dr+x8GSEJTSKW5B` authorization is a new authorization type, `trustworthy`, it is detailed in {{trustworthyauthorization}}.
+The `C1uq5Dr+x8GSEJTSKW5B` authorization is a new authorization type, `trustworthy`, it is detailed in {{trustworthyauthorization}} and {{evidenceauthorization}}.
 
 Here is an example:
 
@@ -242,7 +241,7 @@ It produces fresh Evidence, and provides this to the Verifier.
 The details of this step are not in scope for this document.
 As an example, it might use TPM-CHARRA {{?RFC9684}}, or X, or Y (XXX: insert more options)
 
-The format result is described in {{response}}.
+The format result is described in {{attestation-response}} and {{evidence-response}}.
 (An example from {{-AR4SI}} would be good here)
 Assume the following binary blob is the response:
 
@@ -296,13 +295,13 @@ attestClaimsHint (optional, list of string)
 
 Once fresh Attestation Results have been obtained from an appropriate RATS Verifier, then this result is posted to the URL provided in the `url` attribute.
 
-## attestion-result-01 Response {#response}
+## attestion-result-01 Response {#attestation-response}
 
 The data sent SHOULD be Attestation Results in the form of of a CMW {{-CMW, Section 5.2}} tagged JSON encoded Attestation Results for Secure Interactions (AR4SI) {{-AR4SI}}.
 The CM-type MUST include attestation-results, and MUST NOT include any other wrapped values.
 Other formats are permitted by prior arrangement, however, they MUST use the CMW format so that they can be distinguished.
 
-# ACME Extensions -- encrypted-evidence-01 challenge type {#trustworthyauthorization}
+# ACME Extensions -- encrypted-evidence-01 challenge type {#evidenceauthorization}
 
 A `encrypted-evidence-01` challenge type asks the Client to send fresh Evidence to the Server.
 The Server will use the RATS background model to connect to a Verifier, obtaining Attestation Results.
@@ -322,7 +321,7 @@ token (required, string):
 verifierEncryptionCredential (optional, base64 encoded)
 : Evidence of a device state will usually include device specific identities, and this is often one to one linkable to a person, therefore has Personally Identifiable Information (PII).  The Server does not need to see this information, so the Evidence needs to be encrypted to a key that only the Verifier possesses.
 
-## attestion-result-01 Response {#response}
+## attestion-result-01 Response {#evidence-response}
 
 Once fresh Evidence has been collected, then it is posted to the URL provided in the `url` attribute.
 
