@@ -158,6 +158,8 @@ In this example, a `dns` identity is chosen for the domain name `client01.financ
 An example extended newOrder JWS request:
 
 ~~~~~~~~~~
+  POST /acme/new-order HTTP/1.1
+  Content-Type: application/json
   {
     "protected": base64url({
       "alg": "ES256",
@@ -179,6 +181,11 @@ As explained in {{RFC8555, Section 7.1.3}}, the server returns an Order Object.
 An example extended Order Object that includes
 
 ~~~~~~~~~~
+  POST /acme/new-order HTTP/1.1
+  ...
+
+  HTTP/1.1 200 OK
+  Content-Type: application/json
   {
     "status": "pending",
 
@@ -213,6 +220,11 @@ The `C1uq5Dr+x8GSEJTSKW5B` authorization is a new authorization type, `trustwort
 Here is an example:
 
 ~~~~~~~~~~
+   GET https://example.com/acme/authz/C1uq5Dr+x8GSEJTSKW5B HTTP/1.1
+   ..
+
+   HTTP/1.1 200 OK
+   Content-Type: application/json
    {
      "status": "pending",
      "expires": "2025-09-30T14:09:07.99Z",
@@ -243,13 +255,20 @@ As an example, it might use TPM-CHARRA {{?RFC9684}}, or X, or Y (XXX: insert mor
 
 The format result is described in {{attestation-response}} and {{evidence-response}}.
 (An example from {{-AR4SI}} would be good here)
-Assume the following binary blob is the response:
-
-~~~~~~~~~~
-yePAuQj5xXAnz87/7ItOkDTk5Y4syoW1RL2zPBzYEHBQ06JyUvZDYPYjeTqwlPszb9Grbxw0UAEFx5DxObV1
-~~~~~~~~~~
 
 This result is sent as a POST to `https://example.com/acme/chall/prV_8235AD9d`
+
+~~~~~~~~~~
+   POST https://example.com/acme/chall/prV_8235AD9d HTTP/1.1
+   ..
+
+   HTTP/1.1 200 OK
+   Content-Type: application/cmw+cbor
+
+   yePAuQj5xXAnz87/7ItOkDTk5Y4syoW1RL2zPBzYEHBQ06JyUvZDYPYjeTqwlPszb9Grbxw0UAEFx5DxObV1
+~~~~~~~~~~
+
+(EDIT: change to cwm+jws example)
 
 The Server decodes the provided CMW {{-CMW}}.
 The Attestation Results found within will be digitally signed by the Verifier.
