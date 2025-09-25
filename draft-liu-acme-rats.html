@@ -1053,7 +1053,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Liu, et al.</td>
-<td class="center">Expires 28 March 2026</td>
+<td class="center">Expires 29 March 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1066,12 +1066,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-liu-acme-rats-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-09-24" class="published">24 September 2025</time>
+<time datetime="2025-09-25" class="published">25 September 2025</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-03-28">28 March 2026</time></dd>
+<dd class="expires"><time datetime="2026-03-29">29 March 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1130,7 +1130,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 28 March 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 29 March 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1205,13 +1205,13 @@ svg :is([fill="white"], [fill^="#fff"]) {
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
-            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-acme-extensions-encrypted-e" class="internal xref">ACME Extensions -- encrypted-evidence-01 challenge type</a></p>
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-acme-extensions-attestation-" class="internal xref">ACME Extensions -- attestation-evidence-01 challenge type</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
-                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-encrypted-evidence-01-chall" class="internal xref">encrypted-evidence-01 Challenge</a></p>
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-attestation-evidence-01-cha" class="internal xref">attestation-evidence-01 Challenge</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
-                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-attestion-result-01-response" class="internal xref">attestion-result-01 Response</a></p>
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-attestion-evidence-01-respo" class="internal xref">attestion-evidence-01 Response</a></p>
 </li>
             </ul>
 </li>
@@ -1231,7 +1231,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
                 <p id="section-toc.1-1.6.2.3.1"><a href="#section-6.3" class="auto internal xref">6.3</a>.  <a href="#name-byod-devices" class="internal xref">BYOD devices</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.4">
-                <p id="section-toc.1-1.6.2.4.1"><a href="#section-6.4" class="auto internal xref">6.4</a>.  <a href="#name-fips-private-key" class="internal xref">FIPS private key</a></p>
+                <p id="section-toc.1-1.6.2.4.1"><a href="#section-6.4" class="auto internal xref">6.4</a>.  <a href="#name-private-key-in-hardware" class="internal xref">Private key in hardware</a></p>
 </li>
             </ul>
 </li>
@@ -1563,22 +1563,22 @@ Other formats are permitted by prior arrangement, however, they MUST use the CMW
 </div>
 <div id="evidenceauthorization">
 <section id="section-4">
-      <h2 id="name-acme-extensions-encrypted-e">
-<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-acme-extensions-encrypted-e" class="section-name selfRef">ACME Extensions -- encrypted-evidence-01 challenge type</a>
+      <h2 id="name-acme-extensions-attestation-">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-acme-extensions-attestation-" class="section-name selfRef">ACME Extensions -- attestation-evidence-01 challenge type</a>
       </h2>
-<p id="section-4-1">A <code>encrypted-evidence-01</code> challenge type asks the Client to send fresh Evidence to the Server.
+<p id="section-4-1">A <code>attestation-evidence-01</code> challenge type asks the Client to send fresh Evidence to the Server.
 The Server will use the RATS background model to connect to a Verifier, obtaining Attestation Results.<a href="#section-4-1" class="pilcrow">¶</a></p>
-<div id="encrypted-evidence-01-challenge">
+<div id="attestation-evidence-01-challenge">
 <section id="section-4.1">
-        <h3 id="name-encrypted-evidence-01-chall">
-<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-encrypted-evidence-01-chall" class="section-name selfRef">encrypted-evidence-01 Challenge</a>
+        <h3 id="name-attestation-evidence-01-cha">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-attestation-evidence-01-cha" class="section-name selfRef">attestation-evidence-01 Challenge</a>
         </h3>
-<p id="section-4.1-1">The <code>encrypted-evidence-01</code> Challenge works with Background Model of RATS.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-1">The <code>attestation-evidence-01</code> Challenge works with Background Model of RATS.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
 <p id="section-4.1-2">The corresponding Challenge Object is:<a href="#section-4.1-2" class="pilcrow">¶</a></p>
 <span class="break"></span><dl class="dlParallel" id="section-4.1-3">
           <dt id="section-4.1-3.1">type (required, string):</dt>
           <dd style="margin-left: 1.5em" id="section-4.1-3.2">
-            <p id="section-4.1-3.2.1">The string "encrypted-evidence-01".<a href="#section-4.1-3.2.1" class="pilcrow">¶</a></p>
+            <p id="section-4.1-3.2.1">The string "attestation-evidence-01".<a href="#section-4.1-3.2.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
 <dt id="section-4.1-3.3">token (required, string):</dt>
@@ -1588,7 +1588,7 @@ The Server will use the RATS background model to connect to a Verifier, obtainin
           <dd class="break"></dd>
 <dt id="section-4.1-3.5">verifierEncryptionCredential (optional, base64 encoded)</dt>
           <dd style="margin-left: 1.5em" id="section-4.1-3.6">
-            <p id="section-4.1-3.6.1">Evidence of a device state will usually include device specific identities, and this is often one to one linkable to a person, therefore has Personally Identifiable Information (PII).  The Server does not need to see this information, so the Evidence needs to be encrypted to a key that only the Verifier possesses.<a href="#section-4.1-3.6.1" class="pilcrow">¶</a></p>
+            <p id="section-4.1-3.6.1">This mode is for cases where the evidence of a device contains specific identifiers that could be linkable to a person and therefore qualify as Personally Identifiable Information. In these cases, the Server MAY opt to pass the evidence encrypted to the Verifier so that it never needs to handle to decrypted PII. The verifierENcryptionCredential can be of any type that is compatible with JWE encryption.<a href="#section-4.1-3.6.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
 </dl>
@@ -1596,13 +1596,14 @@ The Server will use the RATS background model to connect to a Verifier, obtainin
 </div>
 <div id="evidence-response">
 <section id="section-4.2">
-        <h3 id="name-attestion-result-01-response">
-<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-attestion-result-01-response" class="section-name selfRef">attestion-result-01 Response</a>
+        <h3 id="name-attestion-evidence-01-respo">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-attestion-evidence-01-respo" class="section-name selfRef">attestion-evidence-01 Response</a>
         </h3>
 <p id="section-4.2-1">Once fresh Evidence has been collected, then it is posted to the URL provided in the <code>url</code> attribute.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
-<p id="section-4.2-2">The data sent SHOULD be Edvidence in the form of of a CMW <span>[<a href="#I-D.ietf-rats-msg-wrap" class="cite xref">I-D.ietf-rats-msg-wrap</a>], <a href="https://datatracker.ietf.org/doc/html/draft-ietf-rats-msg-wrap-17#section-5.2" class="relref">Section 5.2</a></span> tagged JSON encoded Evidence.
-The CM-type MUST include Evidence, and MUST NOT include any other wrapped values.
+<p id="section-4.2-2">The data sent SHOULD be Evidence in the form of of a CMW <span>[<a href="#I-D.ietf-rats-msg-wrap" class="cite xref">I-D.ietf-rats-msg-wrap</a>], <a href="https://datatracker.ietf.org/doc/html/draft-ietf-rats-msg-wrap-17#section-5.2" class="relref">Section 5.2</a></span> tagged JSON encoded Evidence.
+The CMW-type MUST include Evidence, and MUST NOT include any other wrapped values.
 Other formats are permitted by prior arrangement, however, they MUST use the CMW format so that they can be distinguished.<a href="#section-4.2-2" class="pilcrow">¶</a></p>
+<p id="section-4.2-3">If a verifierEncryptionCredential was provided by the Server, then the Client MUST encrypt the evidence by placing the entire CMW as the payload of a JWE encrypted for the verifierEncryptionCredential.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1667,13 +1668,13 @@ c. The RADIUS Client/Access Point/Switch is not aware of the identity of the acc
 <p id="section-6.3-2">In this case, the Server might challenge the client to prove that it is properly-registered to the enterprise to the same user as the subject of the requested S/MIME certificate, and that the device is running the corporate-approved security agents.<a href="#section-6.3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="fips-private-key">
+<div id="private-key-in-hardware">
 <section id="section-6.4">
-        <h3 id="name-fips-private-key">
-<a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-fips-private-key" class="section-name selfRef">FIPS private key</a>
+        <h3 id="name-private-key-in-hardware">
+<a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-private-key-in-hardware" class="section-name selfRef">Private key in hardware</a>
         </h3>
-<p id="section-6.4-1">Yet another example comes from cases where the requested certificate profile requires the subscriber private key to be in a Hardware Security Module, which can be attested for example via <span>[<a href="#RATSKA" class="cite xref">RATSKA</a>]</span>.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
-<p id="section-6.4-2">TODO: expand ... CA/B CSBRs<a href="#section-6.4-2" class="pilcrow">¶</a></p>
+<p id="section-6.4-1">In some scenarios the CA might require that the private key corresponding to the certificate request is stored in cryptographic hardware and non-extractable. For example, the certificate profile for some types of administrative credentials may be required to be stored in a token or smartcard. Or the CA might be required to enforce that the private key is stored in a FIPS-certified HSM running in a configuration compliant with its FIPS certificate -- this is the case, for example, with CA/Browser Forum Code Signing certificates <span>[<a href="#CABF-CSBRs" class="cite xref">CABF-CSBRs</a>]</span> which can be attested for example via <span>[<a href="#RATSKA" class="cite xref">RATSKA</a>]</span>.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-2">It could also be possible that the requested certificate profile does not require the requested key to be hardware-backed, but that the CA will issue the certificate with extra assurance, for example an extra policy OID or a longer expiry period, if attestation of hardware can be provided.<a href="#section-6.4-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1805,6 +1806,10 @@ It does not result in any specific contents to the certificate Subject or Subjec
 <dt id="letsencrypt">[letsencrypt]</dt>
         <dd>
 <span class="refAuthor">Electronic Frontier Foundation</span>, <span class="refTitle">"Celebrating Ten Years of Encrypting the Web with Let’s Encrypt"</span>, <time datetime="2025-08-20" class="refDate">20 August 2025</time>, <span>&lt;<a href="https://www.eff.org/deeplinks/2023/08/celebrating-ten-years-encrypting-web-lets-encrypt">https://www.eff.org/deeplinks/2023/08/celebrating-ten-years-encrypting-web-lets-encrypt</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="CABF-CSBRs">[CABF-CSBRs]</dt>
+        <dd>
+<span class="refAuthor">CA/BROWSER FORUM</span>, <span class="refTitle">"Baseline Requirements for Code-Signing Certificates"</span>, <span>n.d.</span>, <span>&lt;<a href="https://cabforum.org/working-groups/code-signing/documents/">https://cabforum.org/working-groups/code-signing/documents/</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC9684">[RFC9684]</dt>
       <dd>

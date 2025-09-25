@@ -5,10 +5,10 @@
 Automated Certificate Management Environment                   C. P. Liu
 Internet-Draft                                                    Huawei
 Intended status: Standards Track                            M. Ounsworth
-Expires: 28 March 2026                                   Entrust Limited
+Expires: 29 March 2026                                   Entrust Limited
                                                            M. Richardson
                                             Sandelman Software Works Inc
-                                                       24 September 2025
+                                                       25 September 2025
 
 
 Automated Certificate Management Environment (ACME) rats Identifier and
@@ -58,7 +58,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 28 March 2026.
+   This Internet-Draft will expire on 29 March 2026.
 
 Copyright Notice
 
@@ -89,15 +89,15 @@ Table of Contents
    3.  ACME Extensions -- attestation-result-01 challenge type
      3.1.  attestation-result-01 Challenge
      3.2.  attestion-result-01 Response
-   4.  ACME Extensions -- encrypted-evidence-01 challenge type
-     4.1.  encrypted-evidence-01 Challenge
-     4.2.  attestion-result-01 Response
+   4.  ACME Extensions -- attestation-evidence-01 challenge type
+     4.1.  attestation-evidence-01 Challenge
+     4.2.  attestion-evidence-01 Response
    5.  ACME Attest Claims Hint Registry
    6.  Example use cases
      6.1.  Conflicting duties
      6.2.  Enterprise WiFi Access
      6.3.  BYOD devices
-     6.4.  FIPS private key
+     6.4.  Private key in hardware
    7.  Security Considerations
    8.  IANA Considerations
      8.1.  ACME Attest Claims Hint Registry
@@ -451,43 +451,50 @@ Table of Contents
    arrangement, however, they MUST use the CMW format so that they can
    be distinguished.
 
-4.  ACME Extensions -- encrypted-evidence-01 challenge type
+4.  ACME Extensions -- attestation-evidence-01 challenge type
 
-   A encrypted-evidence-01 challenge type asks the Client to send fresh
-   Evidence to the Server.  The Server will use the RATS background
-   model to connect to a Verifier, obtaining Attestation Results.
+   A attestation-evidence-01 challenge type asks the Client to send
+   fresh Evidence to the Server.  The Server will use the RATS
+   background model to connect to a Verifier, obtaining Attestation
+   Results.
 
-4.1.  encrypted-evidence-01 Challenge
+4.1.  attestation-evidence-01 Challenge
 
-   The encrypted-evidence-01 Challenge works with Background Model of
+   The attestation-evidence-01 Challenge works with Background Model of
    RATS.
 
    The corresponding Challenge Object is:
 
-   type (required, string):  The string "encrypted-evidence-01".
+   type (required, string):  The string "attestation-evidence-01".
 
    token (required, string):  A randomly created nonce provided by the
       server which MUST be included in the Evidence to provide
       freshness.
 
-   verifierEncryptionCredential (optional, base64 encoded)  Evidence of
-      a device state will usually include device specific identities,
-      and this is often one to one linkable to a person, therefore has
-      Personally Identifiable Information (PII).  The Server does not
-      need to see this information, so the Evidence needs to be
-      encrypted to a key that only the Verifier possesses.
+   verifierEncryptionCredential (optional, base64 encoded)  This mode is
+      for cases where the evidence of a device contains specific
+      identifiers that could be linkable to a person and therefore
+      qualify as Personally Identifiable Information.  In these cases,
+      the Server MAY opt to pass the evidence encrypted to the Verifier
+      so that it never needs to handle to decrypted PII.  The
+      verifierENcryptionCredential can be of any type that is compatible
+      with JWE encryption.
 
-4.2.  attestion-result-01 Response
+4.2.  attestion-evidence-01 Response
 
    Once fresh Evidence has been collected, then it is posted to the URL
    provided in the url attribute.
 
-   The data sent SHOULD be Edvidence in the form of of a CMW
+   The data sent SHOULD be Evidence in the form of of a CMW
    [I-D.ietf-rats-msg-wrap], Section 5.2 tagged JSON encoded Evidence.
-   The CM-type MUST include Evidence, and MUST NOT include any other
+   The CMW-type MUST include Evidence, and MUST NOT include any other
    wrapped values.  Other formats are permitted by prior arrangement,
    however, they MUST use the CMW format so that they can be
    distinguished.
+
+   If a verifierEncryptionCredential was provided by the Server, then
+   the Client MUST encrypt the evidence by placing the entire CMW as the
+   payload of a JWE encrypted for the verifierEncryptionCredential.
 
 5.  ACME Attest Claims Hint Registry
 
@@ -587,13 +594,24 @@ Table of Contents
    subject of the requested S/MIME certificate, and that the device is
    running the corporate-approved security agents.
 
-6.4.  FIPS private key
+6.4.  Private key in hardware
 
-   Yet another example comes from cases where the requested certificate
-   profile requires the subscriber private key to be in a Hardware
-   Security Module, which can be attested for example via [RATSKA].
+   In some scenarios the CA might require that the private key
+   corresponding to the certificate request is stored in cryptographic
+   hardware and non-extractable.  For example, the certificate profile
+   for some types of administrative credentials may be required to be
+   stored in a token or smartcard.  Or the CA might be required to
+   enforce that the private key is stored in a FIPS-certified HSM
+   running in a configuration compliant with its FIPS certificate --
+   this is the case, for example, with CA/Browser Forum Code Signing
+   certificates [CABF-CSBRs] which can be attested for example via
+   [RATSKA].
 
-   TODO: expand ... CA/B CSBRs
+   It could also be possible that the requested certificate profile does
+   not require the requested key to be hardware-backed, but that the CA
+   will issue the certificate with extra assurance, for example an extra
+   policy OID or a longer expiry period, if attestation of hardware can
+   be provided.
 
 7.  Security Considerations
 
@@ -728,6 +746,11 @@ Table of Contents
               Encrypting the Web with Let’s Encrypt", 20 August 2025,
               <https://www.eff.org/deeplinks/2023/08/celebrating-ten-
               years-encrypting-web-lets-encrypt>.
+
+   [CABF-CSBRs]
+              CA/BROWSER FORUM, "Baseline Requirements for Code-Signing
+              Certificates", n.d., <https://cabforum.org/working-groups/
+              code-signing/documents/>.
 
    [RFC9684]  Birkholz, H., Eckel, M., Bhandari, S., Voit, E., Sulzen,
               B., Xia, L., Laffey, T., and G. C. Fedorkow, "A YANG Data
