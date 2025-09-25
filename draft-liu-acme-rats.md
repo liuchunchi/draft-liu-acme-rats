@@ -50,6 +50,12 @@ informative:
       org:
       - "Electronic Frontier Foundation"
     date: 2025-08-20
+  CABF-CSBRs:
+    target: https://cabforum.org/working-groups/code-signing/documents/
+    title: "Baseline Requirements for Code-Signing Certificates"
+    author:
+      org:
+      - CA/BROWSER FORUM
 
 --- abstract
 
@@ -320,33 +326,36 @@ The data sent SHOULD be Attestation Results in the form of of a CMW {{-CMW, Sect
 The CM-type MUST include attestation-results, and MUST NOT include any other wrapped values.
 Other formats are permitted by prior arrangement, however, they MUST use the CMW format so that they can be distinguished.
 
-# ACME Extensions -- encrypted-evidence-01 challenge type {#evidenceauthorization}
+# ACME Extensions -- attestation-evidence-01 challenge type {#evidenceauthorization}
 
-A `encrypted-evidence-01` challenge type asks the Client to send fresh Evidence to the Server.
+A `attestation-evidence-01` challenge type asks the Client to send fresh Evidence to the Server.
 The Server will use the RATS background model to connect to a Verifier, obtaining Attestation Results.
 
-## encrypted-evidence-01 Challenge
+## attestation-evidence-01 Challenge
 
-The `encrypted-evidence-01` Challenge works with Background Model of RATS.
+The `attestation-evidence-01` Challenge works with Background Model of RATS.
 
 The corresponding Challenge Object is:
 
 type (required, string):
-: The string "encrypted-evidence-01".
+: The string "attestation-evidence-01".
 
 token (required, string):
 : A randomly created nonce provided by the server which MUST be included in the Evidence to provide freshness.
 
 verifierEncryptionCredential (optional, base64 encoded)
-: Evidence of a device state will usually include device specific identities, and this is often one to one linkable to a person, therefore has Personally Identifiable Information (PII).  The Server does not need to see this information, so the Evidence needs to be encrypted to a key that only the Verifier possesses.
+: This mode is for cases where the evidence of a device contains specific identifiers that could be linkable to a person and therefore qualify as Personally Identifiable Information. In these cases, the Server MAY opt to pass the evidence encrypted to the Verifier so that it never needs to handle to decrypted PII. The verifierENcryptionCredential can be of any type that is compatible with JWE encryption.
 
-## attestion-result-01 Response {#evidence-response}
+## attestion-evidence-01 Response {#evidence-response}
 
 Once fresh Evidence has been collected, then it is posted to the URL provided in the `url` attribute.
 
-The data sent SHOULD be Edvidence in the form of of a CMW {{-CMW, Section 5.2}} tagged JSON encoded Evidence.
-The CM-type MUST include Evidence, and MUST NOT include any other wrapped values.
+The data sent SHOULD be Evidence in the form of of a CMW {{-CMW, Section 5.2}} tagged JSON encoded Evidence.
+The CMW-type MUST include Evidence, and MUST NOT include any other wrapped values.
 Other formats are permitted by prior arrangement, however, they MUST use the CMW format so that they can be distinguished.
+
+If a verifierEncryptionCredential was provided by the Server, then the Client MUST encrypt the evidence by placing the entire CMW as the payload of a JWE encrypted for the verifierEncryptionCredential.
+
 
 # ACME Attest Claims Hint Registry {#claimshints}
 
@@ -395,11 +404,12 @@ Another example is issuing S/MIME certificates to BYOD devices only if they can 
 In this case, the Server might challenge the client to prove that it is properly-registered to the enterprise to the same user as the subject of the requested S/MIME certificate, and that the device is running the corporate-approved security agents.
 
 
-## FIPS private key
+## Private key in hardware
 
-Yet another example comes from cases where the requested certificate profile requires the subscriber private key to be in a Hardware Security Module, which can be attested for example via [RATSKA].
+In some scenarios the CA might require that the private key corresponding to the certificate request is stored in cryptographic hardware and non-extractable. For example, the certificate profile for some types of administrative credentials may be required to be stored in a token or smartcard. Or the CA might be required to enforce that the private key is stored in a FIPS-certified HSM running in a configuration compliant with its FIPS certificate -- this is the case, for example, with CA/Browser Forum Code Signing certificates {{CABF-CSBRs}} which can be attested for example via [RATSKA].
 
-TODO: expand ... CA/B CSBRs
+It could also be possible that the requested certificate profile does not require the requested key to be hardware-backed, but that the CA will issue the certificate with extra assurance, for example an extra policy OID or a longer expiry period, if attestation of hardware can be provided.
+
 
 # Security Considerations
 
