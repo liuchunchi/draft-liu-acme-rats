@@ -493,7 +493,7 @@ The initial registry contents is shown in the table below.
 | Property Hint       | Description                  |
 |------------------|------------------------------|
 | ""               | Empty string. Indicates client support for, or a server request for, attestation without being specific about what type. Typically this means the client will produce whatever remote attestation data it is capable of. |
-| "hsm"            | Attestation that the private key associated with this certificate request is stored in cryptographic hardware such as a TPM or PKCS#11 HSM. In the case of PKCS#11 HSMs, the attestation SHOULD contain the PKCs#11 properties of the private key storage, as well as an indication of whether the cryptographic module is operating in FIPS mode. |
+| "hsm"            | Attestation that the private key associated with this certificate request is stored in cryptographic hardware such as a TPM or PKIX HSM. In the case of PKCS#11 HSMs, the attestation SHOULD contain the PKCs#11 properties of the private key storage, as well as an indication of whether the cryptographic module is operating in FIPS mode. |
 | "measured_boot"    | Attestation from the device's onboard measured-boot stack of the device running the application. |
 | "os_patch_level" | Attestation to the version or patch level of the device's operating system.             |
 | "sw_manifest"    | A manifest list of all software currently running on the device.                        |
